@@ -2,55 +2,28 @@
 	"hmnet-configurator": {
 		"general": {
 			"tabLabel": "Configurator",
-			"moduleTitle": "HMnet Configurator",
-			"moduleDescription": "Manage configurable options and pricing tiers for this product."
+			"cardTitle": "Configurator",
+			"cardSubtitle": "Here you can manage the print prices for this product."
 		},
-		"buttons": {
-			"addOption": "Add option",
-			"save": "Save configurator"
+		"toolbar": {
+			"addPosition": "Add position",
+			"save": "Save"
 		},
-		"empty": {
-			"title": "No configurator options yet",
-			"description": "Add your first option to start configuring this product."
-		},
-		"option": {
-			"titlePlaceholder": "New option",
-			"name": "Option name",
-			"position": "Position",
-			"required": "Required",
-			"noChoices": "No choices have been added yet. Use the plus button to add one.",
-			"add": "Add an option",
-			"delete": "Delete option"
-		},
-		"choice": {
-			"titlePlaceholder": "New choice",
-			"name": "Choice name",
-			"position": "Position",
-			"addPriceTier": "Add price tier",
-			"duplicate": "Duplicate",
-			"delete": "Delete"
-		},
-		"possibility": {
-			"heading": "Possibilities",
-			"add": "Add possibility",
-			"empty": "No possibilities yet. Add one to define selections.",
-			"name": "Possibility name",
-			"titlePlaceholder": "New possibility",
-			"multiplier": "Multiplier",
-			"position": "Position"
-		},
-		"pricing": {
-			"heading": "Price tiers",
-			"rangeStart": "Minimum quantity",
-			"rangeEnd": "Maximum quantity",
-			"price": "Surcharge",
-			"empty": "No price tiers yet. Add one to define surcharges.",
-			"rangeFrom": "From {start}",
-			"rangeBetween": "{start} – {end}"
+		"emptyState": {
+			"title": "No configurator fields yet",
+			"description": "Create your first field to configure print prices."
 		},
 		"notifications": {
-			"saveSuccess": "Configurator saved successfully.",
-			"saveError": "Saving configurator changes failed."
+			"saveSuccess": "Configurator fields saved successfully.",
+			"saveError": "Configurator fields couldn't be saved.",
+			"loadError": "Configurator fields couldn't be loaded."
+		},
+		"table": {
+			"columns": {
+				"name": "Name",
+				"isRequired": "Required",
+				"isVisible": "Visibility"
+			}
 		}
 	}
 }

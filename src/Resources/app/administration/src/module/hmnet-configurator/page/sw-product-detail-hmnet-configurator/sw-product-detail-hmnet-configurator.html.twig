@@ -1,0 +1,55 @@
+<mt-card :title="$tc('hmnet-configurator.general.cardTitle')" :subtitle="$tc('hmnet-configurator.general.cardSubtitle')" :large="true">
+	<template #headerRight>
+		<mt-button
+			variant="secondary"
+			size="small"
+			@click="onAddField"
+			:disabled="isSaving"
+		>
+			{{ $tc('hmnet-configurator.toolbar.addPosition') }}
+		</mt-button>
+		<mt-button
+			variant="primary"
+			size="small"
+			@click="onSaveFields"
+			:disabled="isSaveDisabled"
+			:loading="isSaving"
+		>
+			{{ $tc('hmnet-configurator.toolbar.save') }}
+		</mt-button>
+	</template>
+	<template #grid>
+		<sw-data-grid 
+			:data-source="fields"
+			:columns="columns"
+			:show-selection="false"
+			:show-actions="false"
+			:allow-inline-edit="true"
+			:is-loading="isLoading"
+			:skeleton-item-amount="5"
+			:compact-mode="true"
+		>
+			<template #empty-state>
+				<sw-empty-state
+					v-if="!isLoading"
+					:title="$tc('hmnet-configurator.emptyState.title')"
+					:description="$tc('hmnet-configurator.emptyState.description')"
+				>
+					<template #actions>
+						<mt-button
+							variant="primary"
+							size="small"
+							@click="onAddField"
+							:disabled="isSaving"
+						>
+							{{ $tc('hmnet-configurator.toolbar.addPosition') }}
+						</mt-button>
+					</template>
+				</sw-empty-state>
+			</template>
+			<template #column-options="{ item }">
+				<pre>{{ {item} }}</pre>
+			</template>
+		</sw-data-grid>
+	</template>
+</mt-card>

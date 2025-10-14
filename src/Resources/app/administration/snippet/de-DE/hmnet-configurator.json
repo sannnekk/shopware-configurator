@@ -2,55 +2,28 @@
 	"hmnet-configurator": {
 		"general": {
 			"tabLabel": "Konfigurator",
-			"moduleTitle": "HMnet Konfigurator",
-			"moduleDescription": "Verwalten Sie konfigurierbare Optionen und Preisstaffeln für dieses Produkt."
+			"cardTitle": "Konfigurator",
+			"cardSubtitle": "Hier können Sie die Druckpreise für dieses Produkt verwalten."
 		},
-		"buttons": {
-			"addOption": "Option hinzufügen",
-			"save": "Konfigurator speichern"
+		"toolbar": {
+			"addPosition": "Position hinzufügen",
+			"save": "Speichern"
 		},
-		"empty": {
-			"title": "Noch keine Konfigurator-Optionen",
-			"description": "Fügen Sie die erste Option hinzu, um mit der Konfiguration zu beginnen."
-		},
-		"option": {
-			"titlePlaceholder": "Neue Option",
-			"name": "Optionsname",
-			"position": "Position",
-			"required": "Pflichtfeld",
-			"noChoices": "Es wurden noch keine Auswahlmöglichkeiten angelegt. Verwenden Sie die Plus-Schaltfläche, um eine hinzuzufügen.",
-			"add": "Option hinzufügen",
-			"delete": "Option löschen"
-		},
-		"choice": {
-			"titlePlaceholder": "Neue Auswahl",
-			"name": "Auswahlname",
-			"position": "Position",
-			"addPriceTier": "Preisstaffel hinzufügen",
-			"duplicate": "Duplizieren",
-			"delete": "Löschen"
-		},
-		"possibility": {
-			"heading": "Varianten",
-			"add": "Variante hinzufügen",
-			"empty": "Es sind noch keine Varianten definiert. Fügen Sie eine hinzu, um Auswahlen zu ermöglichen.",
-			"name": "Variantenname",
-			"titlePlaceholder": "Neue Variante",
-			"multiplier": "Multiplikator",
-			"position": "Position"
-		},
-		"pricing": {
-			"heading": "Preisstaffeln",
-			"rangeStart": "Mindestmenge",
-			"rangeEnd": "Höchstmenge",
-			"price": "Aufpreis",
-			"empty": "Noch keine Preisstaffel vorhanden. Fügen Sie eine hinzu, um Aufpreise zu definieren.",
-			"rangeFrom": "Ab {start}",
-			"rangeBetween": "{start} – {end}"
+		"emptyState": {
+			"title": "Noch keine Felder vorhanden",
+			"description": "Legen Sie das erste Feld an, um Druckpreise zu konfigurieren."
 		},
 		"notifications": {
-			"saveSuccess": "Konfigurator wurde erfolgreich gespeichert.",
-			"saveError": "Beim Speichern der Konfigurator-Daten ist ein Fehler aufgetreten."
+			"saveSuccess": "Konfigurator-Felder wurden erfolgreich gespeichert.",
+			"saveError": "Konfigurator-Felder konnten nicht gespeichert werden.",
+			"loadError": "Konfigurator-Felder konnten nicht geladen werden."
+		},
+		"table": {
+			"columns": {
+				"name": "Name",
+				"isRequired": "Vorauswahl",
+				"isVisible": "Sichtbarkeit"
+			}
 		}
 	}
 }
