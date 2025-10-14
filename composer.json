@@ -1,0 +1,27 @@
+{
+    "name": "hmnet-configurator/hmnet-configurator",
+    "description": "hmnet-configurator/hmnet-configurator",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "MIT",
+    "require": {
+        "shopware/core": "~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "HMnet\\Configurator\\HMnetConfigurator",
+        "label": {
+            "de-DE": "HMnet: Konfigurator",
+            "en-GB": "HMnet: Configurator"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "HMnet\\Configurator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "HMnet\\Configurator\\Tests\\": "tests/"
+        }
+    }
+}
