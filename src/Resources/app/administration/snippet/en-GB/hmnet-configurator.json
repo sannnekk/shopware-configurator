@@ -22,8 +22,25 @@
 			"columns": {
 				"name": "Name",
 				"isRequired": "Required",
-				"isVisible": "Visibility"
-			}
+				"isVisible": "Visibility",
+				"options": "Options",
+				"prices": "Prices"
+			},
+			"option": {
+				"inputLabel": "Option name",
+				"inputPlaceholder": "e.g. Screen printing, Digital printing, ...",
+				"noOptions": "No options available",
+				"removeOption": "Remove option",
+				"addOption": "Add option"
+			},
+			"possibility": {
+				"noPossibilities": "No variants available",
+				"addPossibility": "Add variant",
+				"nameLabel": "Variant name",
+				"namePlaceholder": "e.g. 1-color, 4-color, ...",
+				"multiplicatorLabel": "Multiplier"
+			},
+			"removeField": "Remove field"
 		}
 	}
 }

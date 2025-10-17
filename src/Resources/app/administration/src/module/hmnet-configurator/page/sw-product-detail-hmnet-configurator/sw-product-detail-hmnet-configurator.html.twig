@@ -23,7 +23,7 @@
 			:data-source="fields"
 			:columns="columns"
 			:show-selection="false"
-			:show-actions="false"
+			:show-actions="true"
 			:allow-inline-edit="true"
 			:is-loading="isLoading"
 			:skeleton-item-amount="5"
@@ -48,7 +48,42 @@
 				</sw-empty-state>
 			</template>
 			<template #column-options="{ item }">
-				<pre>{{ {item} }}</pre>
+				<div 
+					v-if="item.options && item.options.length"
+					class="sw-data-grid__options-cell"
+				>
+					<div 
+						v-for="option in item.options"
+						:key="option.id"
+						class="sw-data-grid__option-container"
+					>
+						<hmnet-configurator-option-container 
+							v-model:option="option" 
+							@remove-possibility="onRemovePossibility"
+							@remove-option="onRemoveOption(item.id, option.id)"
+						/>
+					</div>
+				</div>
+				<div v-else>
+					<span class="sw-data-grid__empty-cell">
+						{{ $tc('hmnet-configurator.table.option.noOptions') }}
+					</span>
+				</div>
+			</template>
+			<template #actions="{ item }">
+				<sw-context-menu-item
+					@click="onAddOption(item.id)"
+					icon="plus-circle-s"
+				>
+					{{ $tc('hmnet-configurator.table.option.addOption') }}
+				</sw-context-menu-item>
+				<sw-context-menu-item 
+					variant="danger"
+					icon="regular-trash"
+					@click="onRemoveField(item.id)"
+				>
+					{{ $tc('hmnet-configurator.table.removeField') }}
+				</sw-context-menu-item>
 			</template>
 		</sw-data-grid>
 	</template>

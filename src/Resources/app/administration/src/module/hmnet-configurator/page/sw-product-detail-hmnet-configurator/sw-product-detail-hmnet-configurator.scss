@@ -1,0 +1,17 @@
+.sw-data-grid {
+	&__empty-cell {
+		color: var(--color-darkgray-50);
+		padding: 0 1rem !important;
+	}
+
+	&__cell-content {
+		height: unset !important;
+	}
+
+	&__cell--options {
+		.sw-data-grid__cell-content {
+			padding: 0 !important;
+			display: block !important;
+		}
+	}
+}

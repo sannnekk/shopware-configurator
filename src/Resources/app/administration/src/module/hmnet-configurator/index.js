@@ -1,4 +1,5 @@
 import './page/sw-product-detail-hmnet-configurator'
+import './component/hmnet-configurator-option-container'
 
 const { Module } = Shopware
 

@@ -23,9 +23,23 @@ Component.register('sw-product-detail-hmnet-configurator', {
 		configuratorFieldRepository() {
 			return this.repositoryFactory.create('hmnet_configurator_field')
 		},
+
+		configuratorOptionRepository() {
+			return this.repositoryFactory.create('hmnet_configurator_option')
+		},
+
+		currentLanguageId() {
+			if (Shopware.Store && Shopware.Store.get('context')) {
+				return Shopware.Store.get('context').api.languageId
+			}
+
+			return Shopware.Context.api.languageId
+		},
+
 		productId() {
 			return this.$route.params.id
 		},
+
 		columns() {
 			return [
 				{
@@ -50,6 +64,11 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					inlineEdit: 'boolean',
 					allowResize: true,
 				},
+				{
+					label: this.$tc('hmnet-configurator.table.columns.options'),
+					property: 'options',
+					allowResize: true,
+				},
 			]
 		},
 		hasFields() {
@@ -72,6 +91,14 @@ Component.register('sw-product-detail-hmnet-configurator', {
 				this.loadFields()
 			},
 		},
+
+		currentLanguageId() {
+			if (!this.productId) {
+				return
+			}
+
+			this.loadFields()
+		},
 	},
 
 	created() {
@@ -89,6 +116,22 @@ Component.register('sw-product-detail-hmnet-configurator', {
 			)
 		},
 
+		createEmptyOptionCollection() {
+			return new EntityCollection(
+				'hmnet_configurator_option',
+				'hmnet_configurator_option',
+				Shopware.Context.api
+			)
+		},
+
+		createEmptyPossibilityCollection() {
+			return new EntityCollection(
+				'hmnet_configurator_option_possibility',
+				'hmnet_configurator_option_possibility',
+				Shopware.Context.api
+			)
+		},
+
 		onAddField() {
 			const newField = this.configuratorFieldRepository.create(
 				Shopware.Context.api
@@ -102,12 +145,72 @@ Component.register('sw-product-detail-hmnet-configurator', {
 			this.fields.add(newField)
 		},
 
-		onRemoveField(field) {
+		onRemoveField(fieldId) {
 			if (!this.fields) {
 				return
 			}
 
-			this.fields.remove(field.id)
+			this.fields.remove(fieldId)
+		},
+
+		onAddOption(fieldId) {
+			const field = this.fields.find((f) => f.id === fieldId)
+
+			if (!field) {
+				return
+			}
+
+			if (!field.options) {
+				field.options = this.createEmptyOptionCollection()
+			}
+
+			const newOption = this.configuratorOptionRepository.create(
+				Shopware.Context.api
+			)
+
+			newOption.fieldId = fieldId
+			newOption.position = field.options.length ? field.options.length + 1 : 1
+			newOption.name = ''
+			newOption.possibilities = this.createEmptyPossibilityCollection()
+			newOption.priceTiers = []
+
+			field.options.add(newOption)
+		},
+
+		onRemoveOption(fieldId, optionId) {
+			const field = this.fields.find((f) => f.id === fieldId)
+
+			if (!field || !field.options) {
+				return
+			}
+
+			field.options.remove(optionId)
+		},
+
+		onRemovePossibility(optionId, possibilityId) {
+			if (!this.fields) {
+				return
+			}
+
+			const field = this.fields.find((candidate) => {
+				if (!candidate.options) {
+					return false
+				}
+
+				return !!candidate.options.get(optionId)
+			})
+
+			if (!field) {
+				return
+			}
+
+			const option = field.options.get(optionId)
+
+			if (!option || !option.possibilities) {
+				return
+			}
+
+			option.possibilities.remove(possibilityId)
 		},
 
 		async onSaveFields() {
@@ -153,6 +256,11 @@ Component.register('sw-product-detail-hmnet-configurator', {
 
 			criteria.addFilter(Criteria.equals('productId', this.productId))
 			criteria.addSorting(Criteria.sort('position', 'ASC'))
+			criteria.addAssociation('options.possibilities')
+			criteria.addSorting(Criteria.sort('options.position', 'ASC'))
+			criteria.addSorting(
+				Criteria.sort('options.possibilities.position', 'ASC')
+			)
 
 			try {
 				const result = await this.configuratorFieldRepository.search(
@@ -160,7 +268,21 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					Shopware.Context.api
 				)
 
-				this.fields = result || this.createEmptyCollection()
+				this.fields =
+					result && result.length ? result : this.createEmptyCollection()
+
+				this.fields.forEach((field) => {
+					if (!field.options) {
+						field.options = this.createEmptyOptionCollection()
+						return
+					}
+
+					field.options.forEach((option) => {
+						if (!option.possibilities) {
+							option.possibilities = this.createEmptyPossibilityCollection()
+						}
+					})
+				})
 			} catch (error) {
 				this.fields = this.createEmptyCollection()
 

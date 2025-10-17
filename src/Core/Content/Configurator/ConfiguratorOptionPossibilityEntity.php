@@ -9,6 +9,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Attribute\Entity as EntityAttri
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\Field;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\FieldType;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\ForeignKey;
+use Shopware\Core\Framework\DataAbstractionLayer\Attribute\ManyToOne;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\Translations;
 use Shopware\Core\Framework\Struct\ArrayEntity;
@@ -28,13 +29,16 @@ class ConfiguratorOptionPossibilityEntity extends Entity
 	public ?string $name = null;
 
 	#[Field(type: FieldType::INT, api: true)]
-	public int $position;
+	public int $position = 0;
 
 	#[Field(type: FieldType::INT, api: true)]
 	public int $multiplicator;
 
-	#[ForeignKey(entity: ConfiguratorOptionEntity::ENTITY_NAME, api: true)]
+	#[ForeignKey(entity: ConfiguratorOptionEntity::ENTITY_NAME, column: 'option_id', api: true)]
 	public ?string $optionId = null;
+
+	#[ManyToOne(entity: ConfiguratorOptionEntity::ENTITY_NAME, ref: 'id', column: 'option_id', api: true)]
+	public ?ConfiguratorOptionEntity $option = null;
 
 	/**
 	 * @var array<string, ArrayEntity>|null

@@ -1,0 +1,72 @@
+<div class="hmnet-configurator-option-container">
+	<div class="hmnet-configurator-option-container__label">
+		<mt-text-field 
+			v-model="optionModel.name" 
+			:label="$tc('hmnet-configurator.table.option.inputLabel')"
+			:placeholder="$tc('hmnet-configurator.table.option.inputPlaceholder')" 
+			size="small"
+		/>
+		<div class="hmnet-configurator-option-container__label__actions">
+			<mt-button 
+				variant="critical" 
+				size="small" 
+				@click="onRemoveOption"
+			>
+				{{ $tc('hmnet-configurator.table.option.removeOption') }}
+			</mt-button>
+		</div>
+	</div>
+	<div class="hmnet-configurator-option-container__possibilities">
+		<div 
+			v-for="possibility in optionModel.possibilities"
+			:key="possibility.id"
+			class="hmnet-configurator-option-container__value"
+		>
+			<mt-number-field 
+				v-model="possibility.multiplicator" 
+				:label="$tc('hmnet-configurator.table.possibility.multiplicatorLabel')"
+				size="small"
+				number-type="int"
+				step="1"
+				min="1"
+				max="1000"
+			/>
+			<mt-text-field 
+				v-model="possibility.name" 
+				:label="$tc('hmnet-configurator.table.possibility.nameLabel')"
+				:placeholder="$tc('hmnet-configurator.table.possibility.namePlaceholder')" 
+				size="small"
+			/>
+			<mt-button 
+				variant="critical" 
+				size="small" 
+				@click="onRemovePossibility(possibility.id)"
+			>
+				<mt-icon name="regular-trash" />
+			</mt-button>
+		</div>
+		<div class="hmnet-configurator-option-container__no-possibilities">
+			<span v-if="!optionModel.possibilities.length">
+				{{ $tc('hmnet-configurator.table.possibility.noPossibilities') }}
+			</span>
+		</div>
+		<div class="hmnet-configurator-option-container__add-possibility">
+			<mt-button 
+				variant="action" 
+				size="small"
+				@click="onAddPossibility"
+			>
+				{{ $tc('hmnet-configurator.table.possibility.addPossibility') }}
+			</mt-button>
+		</div>
+	</div>
+	<div class="hmnet-configurator-option-container__prices">
+		<div 
+			v-for="(price, index) in optionModel.prices"
+			:key="index"
+			class="hmnet-configurator-option-container__value"
+		>
+			{{ price }}
+		</div>
+	</div>
+</div>

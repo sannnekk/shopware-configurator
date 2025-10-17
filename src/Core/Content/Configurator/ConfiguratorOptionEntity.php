@@ -9,6 +9,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Attribute\Entity as EntityAttri
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\Field;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\FieldType;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\ForeignKey;
+use Shopware\Core\Framework\DataAbstractionLayer\Attribute\ManyToOne;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\OnDelete;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\OneToMany;
 use Shopware\Core\Framework\DataAbstractionLayer\Attribute\PrimaryKey;
@@ -38,7 +39,7 @@ class ConfiguratorOptionEntity extends Entity
 	 */
 	#[OneToMany(
 		entity: ConfiguratorOptionPossibilityEntity::ENTITY_NAME,
-		ref: 'optionId',
+		ref: 'option_id',
 		onDelete: OnDelete::CASCADE,
 		api: true
 	)]
@@ -48,8 +49,11 @@ class ConfiguratorOptionEntity extends Entity
 	#[Serialized(serializer: PriceTierCollectionSerializer::class)]
 	public PriceTierCollection $priceTiers;
 
-	#[ForeignKey(entity: ConfiguratorFieldEntity::ENTITY_NAME, api: true)]
+	#[ForeignKey(entity: ConfiguratorFieldEntity::ENTITY_NAME, column: 'field_id', api: true)]
 	public ?string $fieldId = null;
+
+	#[ManyToOne(entity: ConfiguratorFieldEntity::ENTITY_NAME, ref: 'id', column: 'field_id', api: true)]
+	public ?ConfiguratorFieldEntity $field = null;
 
 	/**
 	 * @var array<string, ArrayEntity>|null

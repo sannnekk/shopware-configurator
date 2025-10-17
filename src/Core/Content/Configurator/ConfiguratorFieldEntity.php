@@ -43,13 +43,13 @@ class ConfiguratorFieldEntity extends Entity
 	 */
 	#[OneToMany(
 		entity: ConfiguratorOptionEntity::ENTITY_NAME,
-		ref: 'fieldId',
+		ref: 'field_id',
 		onDelete: OnDelete::CASCADE,
 		api: true
 	)]
 	public ?array $options = null;
 
-	#[ForeignKey(entity: 'product', api: true)]
+	#[ForeignKey(entity: 'product', column: 'product_id', api: true)]
 	public ?string $productId = null;
 
 	/**
