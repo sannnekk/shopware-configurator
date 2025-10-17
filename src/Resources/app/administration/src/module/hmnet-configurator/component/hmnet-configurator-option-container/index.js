@@ -11,6 +11,11 @@ Component.register('hmnet-configurator-option-container', {
 			type: Object,
 			required: true,
 		},
+		isEditable: {
+			type: Boolean,
+			required: false,
+			default: false,
+		},
 	},
 
 	inject: ['repositoryFactory'],

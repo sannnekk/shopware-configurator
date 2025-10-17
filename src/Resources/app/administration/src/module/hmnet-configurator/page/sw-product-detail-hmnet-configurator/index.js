@@ -14,6 +14,7 @@ Component.register('sw-product-detail-hmnet-configurator', {
 	data() {
 		return {
 			fields: null,
+			fieldIdsToDelete: [],
 			isLoading: false,
 			isSaving: false,
 		}
@@ -86,6 +87,7 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					label: this.$tc('hmnet-configurator.table.columns.options'),
 					property: 'options',
 					allowResize: true,
+					inlineEdit: true,
 				},
 			]
 		},
@@ -169,6 +171,7 @@ Component.register('sw-product-detail-hmnet-configurator', {
 			}
 
 			this.fields.remove(fieldId)
+			this.fieldIdsToDelete.push(fieldId)
 		},
 
 		onAddOption(fieldId) {
@@ -274,6 +277,14 @@ Component.register('sw-product-detail-hmnet-configurator', {
 				this.createNotificationSuccess({
 					message: this.$tc('hmnet-configurator.notifications.saveSuccess'),
 				})
+
+				// Delete removed fields
+				for (const fieldId of this.fieldIdsToDelete) {
+					await this.configuratorFieldRepository.delete(
+						fieldId,
+						Shopware.Context.api
+					)
+				}
 
 				await this.loadFields()
 			} catch (error) {

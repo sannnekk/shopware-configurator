@@ -1,5 +1,11 @@
 {% block hmnet_product_configurator %}
 	<div class="hmnet-product-configurator">
+		<h1 class="hmnet-product-configurator__title">
+			{{ product.translated.name }}
+		</h1>
+		<p class="hmnet-product-configurator__description">
+			{{ product.translated.metaDescription }}
+		</p>
 		{{ dump() }}
 	</div>
 {% endblock %}

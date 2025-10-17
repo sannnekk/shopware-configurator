@@ -1,7 +1,7 @@
 <div class="hmnet-configurator-option-container">
 	<div class="hmnet-configurator-option-container__label">
-		<mt-text-field v-model="optionModel.name" :label="$tc('hmnet-configurator.table.option.inputLabel')" :placeholder="$tc('hmnet-configurator.table.option.inputPlaceholder')" size="small"/>
-		<div class="hmnet-configurator-option-container__label__actions">
+		<hmnet-editable-field v-model="optionModel.name" :label="$tc('hmnet-configurator.table.option.inputLabel')" :placeholder="$tc('hmnet-configurator.table.option.inputPlaceholder')" size="small" :is-editable="isEditable" type="text"/>
+		<div class="hmnet-configurator-option-container__label__actions" v-if="isEditable">
 			<mt-button variant="critical" size="x-small" @click="onRemoveOption">
 				{{ $tc('hmnet-configurator.table.option.removeOption') }}
 			</mt-button>
@@ -9,9 +9,9 @@
 	</div>
 	<div class="hmnet-configurator-option-container__possibilities">
 		<div v-for="possibility in optionModel.possibilities" :key="possibility.id" class="hmnet-configurator-option-container__value">
-			<mt-number-field v-model="possibility.multiplicator" :label="$tc('hmnet-configurator.table.possibility.multiplicatorLabel')" size="small" number-type="int" :step="1" :min="1" :max="1000"/>
-			<mt-text-field v-model="possibility.name" :label="$tc('hmnet-configurator.table.possibility.nameLabel')" :placeholder="$tc('hmnet-configurator.table.possibility.namePlaceholder')" size="small"/>
-			<mt-button variant="critical" size="x-small" @click="onRemovePossibility(possibility.id)">
+			<hmnet-editable-field v-model="possibility.multiplicator" :label="$tc('hmnet-configurator.table.possibility.multiplicatorLabel')" size="small" type="number" :is-editable="isEditable"/>
+			<hmnet-editable-field v-model="possibility.name" :label="$tc('hmnet-configurator.table.possibility.nameLabel')" :placeholder="$tc('hmnet-configurator.table.possibility.namePlaceholder')" size="small" type="text" :is-editable="isEditable"/>
+			<mt-button variant="critical" size="x-small" @click="onRemovePossibility(possibility.id)" v-if="isEditable">
 				<mt-icon name="regular-trash" size="0.9rem"/>
 			</mt-button>
 		</div>
@@ -20,7 +20,7 @@
 				{{ $tc('hmnet-configurator.table.possibility.noPossibilities') }}
 			</span>
 		</div>
-		<div class="hmnet-configurator-option-container__add-possibility">
+		<div class="hmnet-configurator-option-container__add-possibility" v-if="isEditable">
 			<mt-button variant="action" size="x-small" @click="onAddPossibility">
 				{{ $tc('hmnet-configurator.table.possibility.addPossibility') }}
 			</mt-button>
@@ -28,11 +28,7 @@
 	</div>
 	<div class="hmnet-configurator-option-container__prices">
 		<div v-for="(price, index) in optionModel.priceTiers" :key="index" class="hmnet-configurator-option-container__price">
-			<mt-number-field v-model="price.price" :label="`${$tc('hmnet-configurator.table.price.quantityStartLabel')} ${price.quantityStart} - ${$tc('hmnet-configurator.table.price.quantityEndLabel')} ${price.quantityEnd ?? '∞'}`" size="small" number-type="float" :step="0.01" :min="0" :max="1000">
-				<template #suffix>
-					&euro;
-				</template>
-			</mt-number-field>
+			<hmnet-editable-field v-model="price.price" :label="`${$tc('hmnet-configurator.table.price.quantityStartLabel')} ${price.quantityStart} - ${$tc('hmnet-configurator.table.price.quantityEndLabel')} ${price.quantityEnd ?? '∞'}`" size="small" type="price" :is-editable="isEditable"/>
 		</div>
 	</div>
 </div>

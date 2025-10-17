@@ -1,0 +1,21 @@
+<div class="hmnet-editable-field">
+	<div class="hmnet-editable-field__editable" v-if="isEditable">
+		<mt-text-field v-if="type === 'text'" :model-value="modelValue" @update:model-value="(val) => $emit('update:modelValue', val)" :label="label" :placeholder="placeholder" size="small"/>
+		<mt-number-field v-else-if="type === 'number'" :model-value="modelValue" @update:model-value="(val) => $emit('update:modelValue', val)" :label="label" size="small" number-type="int" :step="1" :min="1" :max="1000"/>
+		<mt-number-field v-else-if="type === 'price'" :model-value="modelValue" @update:model-value="(val) => $emit('update:modelValue', val)" :label="label" size="small" number-type="float" :step="0.01" :min="0" :max="1000">
+			<template #suffix>
+				&euro;
+			</template>
+		</mt-number-field>
+	</div>
+	<div class="hmnet-editable-field__readonly" v-else>
+		<label>{{ label }}</label>
+		<span class="hmnet-editable-field__readonly__value" v-if="type === 'text' || type === 'number'">
+			{{ modelValue ?? '---' }}
+		</span>
+		<span class="hmnet-editable-field__readonly__value" v-else-if="type === 'price'">
+			{{ Number(modelValue).toFixed(2) }}
+			&euro;
+		</span>
+	</div>
+</div>

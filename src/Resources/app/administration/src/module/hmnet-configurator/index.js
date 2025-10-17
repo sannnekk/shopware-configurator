@@ -1,5 +1,6 @@
 import './page/sw-product-detail-hmnet-configurator'
 import './component/hmnet-configurator-option-container'
+import './component/hmnet-editable-field'
 
 const { Module } = Shopware
 
