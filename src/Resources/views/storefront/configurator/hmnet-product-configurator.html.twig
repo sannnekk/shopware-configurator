@@ -6,6 +6,67 @@
 		<p class="hmnet-product-configurator__description">
 			{{ product.translated.metaDescription }}
 		</p>
-		{{ dump() }}
+		<div class="hmnet-product-configurator__amount-and-price">
+			(amount and price)
+		</div>
+		{% for field in page.extensions.hmnetConfiguratorFields %}
+			<div class="hmnet-product-configurator__field">
+				<div class="hmnet-product-configurator__head">
+					<label class="hmnet-product-configurator__field__label">
+						{{ field.translated.name }}
+					</label>
+					<select class="hmnet-product-configurator__field__options">
+						{% for option in field.options %}
+							{% for possibility in option.possibilities %}
+								<option value="{{ possibility.id }}">
+									{{ option.translated.name }}
+									{{ possibility.translated.name }}
+								</option>
+							{% endfor %}
+						{% endfor %}
+					</select>
+				</div>
+				<div class="hmnet-product-configurator__item-price">
+					<span>
+						0,00
+						{{ context.currency.symbol }}
+					</span>
+				</div>
+				<div class="hmnet-product-configurator__amount">
+					<span>x500</span>
+				</div>
+				<div class="hmnet-product-configurator__item-total">
+					<span>
+						0,00
+						{{ context.currency.symbol }}
+					</span>
+				</div>
+			</div>
+		{% endfor %}
+		<div class="hmnet-product-configurator__total">
+			<div class="hmnet-product-configurator__total__net">
+				<h3>Total Net:</h3>
+				<span>
+					0,00
+					{{ context.currency.symbol }}
+				</span>
+			</div>
+			<div class="hmnet-product-configurator__total__tax">
+				<h4>Total Tax:</h4>
+				<span>
+					0,00
+					{{ context.currency.symbol }}
+				</span>
+			</div>
+			<div class="hmnet-product-configurator__total__gross">
+				<h4>Total Gross:</h4>
+				<span>
+					0,00
+					{{ context.currency.symbol }}
+				</span>
+			</div>
+		</div>
 	</div>
+	<br>
+	{{ dump(page.extensions.hmnetConfiguratorFields) }}
 {% endblock %}
