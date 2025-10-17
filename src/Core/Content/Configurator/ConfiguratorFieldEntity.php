@@ -38,6 +38,12 @@ class ConfiguratorFieldEntity extends Entity
 	#[Field(type: FieldType::BOOL, api: true)]
 	public bool $isVisible;
 
+	#[Field(type: FieldType::FLOAT, api: true)]
+	public ?float $setupPrice = null;
+
+	#[Field(type: FieldType::FLOAT, api: true)]
+	public ?float $filmPrice = null;
+
 	/**
 	 * @var array<string, ConfiguratorOptionEntity>|null
 	 */

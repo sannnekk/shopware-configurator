@@ -24,6 +24,8 @@
 				"name": "Name",
 				"isRequired": "Vorauswahl",
 				"isVisible": "Sichtbarkeit",
+				"setupPrice": "Einrichtungspreis",
+				"filmPrice": "Filmpreis",
 				"options": "Optionen",
 				"prices": "Preise"
 			},

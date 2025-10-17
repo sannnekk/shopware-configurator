@@ -84,6 +84,20 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					allowResize: true,
 				},
 				{
+					label: this.$tc('hmnet-configurator.table.columns.setupPrice'),
+					property: 'setupPrice',
+					type: 'number',
+					inlineEdit: 'number',
+					allowResize: true,
+				},
+				{
+					label: this.$tc('hmnet-configurator.table.columns.filmPrice'),
+					property: 'filmPrice',
+					type: 'number',
+					inlineEdit: 'number',
+					allowResize: true,
+				},
+				{
 					label: this.$tc('hmnet-configurator.table.columns.options'),
 					property: 'options',
 					allowResize: true,

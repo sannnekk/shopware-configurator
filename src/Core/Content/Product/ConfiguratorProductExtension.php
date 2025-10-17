@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace HMnet\Configurator\Core\Content\Product;
 
 use HMnet\Configurator\Core\Content\Configurator\ConfiguratorFieldEntity;
-use HMnet\Configurator\Core\Content\Configurator\ConfiguratorOptionDefinition;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityExtension;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
-use Symfony\Flex\Configurator;
 
 class ConfiguratorProductExtension extends EntityExtension
 {
@@ -29,7 +27,7 @@ class ConfiguratorProductExtension extends EntityExtension
 		$collection->add(
 			(new OneToManyAssociationField(
 				'hmnetConfiguratorOptions',
-				ConfiguratorFieldEntity::class,
+				ConfiguratorFieldEntity::ENTITY_NAME,
 				'product_id'
 			))
 		);

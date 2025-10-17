@@ -24,6 +24,8 @@
 				"name": "Name",
 				"isRequired": "Required",
 				"isVisible": "Visibility",
+				"setupPrice": "Setup price",
+				"filmPrice": "Film price",
 				"options": "Options",
 				"prices": "Prices"
 			},

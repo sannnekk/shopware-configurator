@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS `hmnet_configurator_field` (
 	`position` INT NULL,
 	`is_required` TINYINT(1) NOT NULL DEFAULT 0,
 	`is_visible` TINYINT(1) NOT NULL DEFAULT 1,
+	`setup_price` DOUBLE NULL DEFAULT NULL,
+	`film_price` DOUBLE NULL DEFAULT NULL,
 	`created_at` DATETIME(3) NOT NULL,
 	`updated_at` DATETIME(3) NULL,
 	PRIMARY KEY (`id`),
