@@ -40,6 +40,24 @@ Component.register('sw-product-detail-hmnet-configurator', {
 			return this.$route.params.id
 		},
 
+		product() {
+			return Shopware.Store.get('swProductDetail').product
+		},
+
+		productPriceTiers() {
+			if (!this.product || !this.product.prices?.length) {
+				return []
+			}
+
+			return this.product.prices
+				.filter((price) => price.ruleId !== null)
+				.toSorted((a, b) => a.quantityStart - b.quantityStart)
+				.map((price) => ({
+					quantityStart: price.quantityStart,
+					quantityEnd: price.quantityEnd ?? null,
+				}))
+		},
+
 		columns() {
 			return [
 				{
@@ -172,9 +190,29 @@ Component.register('sw-product-detail-hmnet-configurator', {
 			newOption.position = field.options.length ? field.options.length + 1 : 1
 			newOption.name = ''
 			newOption.possibilities = this.createEmptyPossibilityCollection()
-			newOption.priceTiers = []
+			newOption.priceTiers = this.getEmptyPriceTiers()
 
 			field.options.add(newOption)
+		},
+
+		getEmptyPriceTiers() {
+			return this.productPriceTiers.map((tier) => ({
+				quantityStart: tier.quantityStart,
+				quantityEnd: tier.quantityEnd,
+				price: 0.0,
+			}))
+		},
+
+		onRegenerateTiers(fieldId) {
+			const field = this.fields.find((f) => f.id === fieldId)
+
+			if (!field || !field.options) {
+				return
+			}
+
+			field.options.forEach((option) => {
+				option.priceTiers = this.getEmptyPriceTiers()
+			})
 		},
 
 		onRemoveOption(fieldId, optionId) {

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace HMnet\Configurator\Core\Content\Configurator;
 
-class PriceTierCollection
+class PriceTierCollection implements \JsonSerializable
 {
 	/**
-	 * @var array<int, array{toQuantity: ?int, price: float}>
+	 * @var array<int, array{quantityStart: ?int, quantityEnd: ?int, price: float}>
 	 */
 	private array $tiers = [];
 
 	/**
-	 * @param array<int, array{toQuantity: ?int, price: float}> $tiers
+	 * @param array<int, array{quantityStart: ?int, quantityEnd: ?int, price: float}> $tiers
 	 */
 	public function __construct(array $tiers = [])
 	{
@@ -20,9 +20,17 @@ class PriceTierCollection
 	}
 
 	/**
-	 * @return array<int, array{toQuantity: ?int, price: float}>
+	 * @return array<int, array{quantityStart: ?int, quantityEnd: ?int, price: float}>
 	 */
 	public function getTiers(): array
+	{
+		return $this->tiers;
+	}
+
+	/**
+	 * @return array<int, array{quantityStart: ?int, quantityEnd: ?int, price: float}>
+	 */
+	public function jsonSerialize(): array
 	{
 		return $this->tiers;
 	}

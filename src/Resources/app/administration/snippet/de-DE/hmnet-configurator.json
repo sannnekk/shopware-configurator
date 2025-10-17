@@ -16,7 +16,8 @@
 		"notifications": {
 			"saveSuccess": "Konfigurator-Felder wurden erfolgreich gespeichert.",
 			"saveError": "Konfigurator-Felder konnten nicht gespeichert werden.",
-			"loadError": "Konfigurator-Felder konnten nicht geladen werden."
+			"loadError": "Konfigurator-Felder konnten nicht geladen werden.",
+			"loadPriceTiersError": "Die Produkt-Steffelung konnten nicht geladen werden."
 		},
 		"table": {
 			"columns": {
@@ -39,6 +40,11 @@
 				"nameLabel": "Variantenname",
 				"namePlaceholder": "z.B. 1-farbig, 4-farbig, ...",
 				"multiplicatorLabel": "Multiplikator"
+			},
+			"price": {
+				"quantityStartLabel": "Ab",
+				"quantityEndLabel": "Bis",
+				"regenerateTiers": "Steffelung aktualisieren"
 			},
 			"removeField": "Feld löschen"
 		}

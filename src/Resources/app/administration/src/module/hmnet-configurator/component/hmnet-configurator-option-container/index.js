@@ -16,7 +16,7 @@ Component.register('hmnet-configurator-option-container', {
 	inject: ['repositoryFactory'],
 
 	// emits
-	emits: ['update:option', 'remove-possibility', 'remove-option'],
+	emits: ['update:option', 'remove-option'],
 
 	computed: {
 		optionModel: {
@@ -37,7 +37,7 @@ Component.register('hmnet-configurator-option-container', {
 
 	methods: {
 		onRemovePossibility(possibility) {
-			this.$emit('remove-possibility', this.option.id, possibility.id)
+			this.option.possibilities.remove(possibility)
 		},
 
 		onRemoveOption() {

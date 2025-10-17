@@ -47,7 +47,7 @@ class ConfiguratorOptionEntity extends Entity
 
 	#[Field(type: FieldType::JSON, api: true)]
 	#[Serialized(serializer: PriceTierCollectionSerializer::class)]
-	public PriceTierCollection $priceTiers;
+	public ?PriceTierCollection $priceTiers = null;
 
 	#[ForeignKey(entity: ConfiguratorFieldEntity::ENTITY_NAME, column: 'field_id', api: true)]
 	public ?string $fieldId = null;

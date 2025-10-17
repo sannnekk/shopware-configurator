@@ -16,7 +16,8 @@
 		"notifications": {
 			"saveSuccess": "Configurator fields saved successfully.",
 			"saveError": "Configurator fields couldn't be saved.",
-			"loadError": "Configurator fields couldn't be loaded."
+			"loadError": "Configurator fields couldn't be loaded.",
+			"loadPriceTiersError": "Product price tiers couldn't be loaded."
 		},
 		"table": {
 			"columns": {
@@ -39,6 +40,11 @@
 				"nameLabel": "Variant name",
 				"namePlaceholder": "e.g. 1-color, 4-color, ...",
 				"multiplicatorLabel": "Multiplier"
+			},
+			"price": {
+				"quantityStartLabel": "From",
+				"quantityEndLabel": "To",
+				"regenerateTiers": "Regenerate tiers"
 			},
 			"removeField": "Remove field"
 		}

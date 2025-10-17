@@ -31,6 +31,9 @@ class PriceTierCollectionSerializer extends AbstractFieldSerializer
 
 		if ($value instanceof PriceTierCollection) {
 			$data[$propertyName] = $value->getTiers();
+		} elseif (\is_array($value)) {
+			// Normalize array input to ensure proper structure
+			$data[$propertyName] = $this->normalizeValue($value);
 		}
 
 		return $data;
@@ -67,7 +70,7 @@ class PriceTierCollectionSerializer extends AbstractFieldSerializer
 	}
 
 	/**
-	 * @return array<int, array{toQuantity: ?int, price: float}>|null
+	 * @return array<int, array{quantityStart: ?int, quantityEnd: ?int, price: float}>|null
 	 */
 	private function normalizeValue(mixed $value): ?array
 	{
@@ -85,7 +88,8 @@ class PriceTierCollectionSerializer extends AbstractFieldSerializer
 
 		return array_values(array_map(static function (array $tier): array {
 			return [
-				'toQuantity' => $tier['toQuantity'] ?? null,
+				'quantityStart' => $tier['quantityStart'] ?? null,
+				'quantityEnd' => $tier['quantityEnd'] ?? null,
 				'price' => isset($tier['price']) ? (float) $tier['price'] : 0.0,
 			];
 		}, $value));
