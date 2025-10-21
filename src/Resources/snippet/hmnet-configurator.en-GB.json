@@ -1,0 +1,21 @@
+{
+  "hmnet-configurator": {
+    "taxWarning": {
+      "title": "Not supported",
+      "message": "The product configurator only supports net prices. Please switch your shop's tax status to \"Net\" to use the configurator."
+    },
+    "select": {
+      "defaultLabel": "Please select"
+    },
+    "breakdown": {
+      "title": "Setup and film costs",
+      "setupLabel": "Setup: %option%%possibility%",
+      "filmLabel": "Film: %option%%possibility%"
+    },
+    "total": {
+      "net": "Total price NET",
+      "tax": "plus VAT",
+      "gross": "Price incl. VAT"
+    }
+  }
+}

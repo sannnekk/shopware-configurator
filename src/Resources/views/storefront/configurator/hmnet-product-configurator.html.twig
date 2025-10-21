@@ -2,15 +2,23 @@
 	{% set currencyDecimals = context.currency.itemRounding.decimals ?? 2 %}
 	{% set taxRate = product.tax ? product.tax.taxRate : 0 %}
 	{% set taxState = context.taxState %}
-
+	{% set taxWarningTitle = 'hmnet-configurator.taxWarning.title'|trans %}
+	{% set taxWarningMessage = 'hmnet-configurator.taxWarning.message'|trans %}
+	{% set defaultLabel = 'hmnet-configurator.select.defaultLabel'|trans %}
+	{% set breakdownTitle = 'hmnet-configurator.breakdown.title'|trans %}
+	{% set totalNetLabel = 'hmnet-configurator.total.net'|trans %}
+	{% set totalTaxLabel = 'hmnet-configurator.total.tax'|trans %}
+	{% set totalGrossLabel = 'hmnet-configurator.total.gross'|trans %}
+	{% set setupLabelTemplate = 'hmnet-configurator.breakdown.setupLabel'|trans %}
+	{% set filmLabelTemplate = 'hmnet-configurator.breakdown.filmLabel'|trans %}
 
 	{% if taxState != 'net' %}
 		<div class="hmnet-product-configurator__tax-warning">
-			<h3>Nicht unterstützt</h3>
-			<p>Der Produktkonfigurator unterstützt nur Netto-Preise. Bitte wechseln Sie den Steuerstatus Ihres Shops auf "Netto" um den Konfigurator zu verwenden.</p>
+			<h3>{{ taxWarningTitle }}</h3>
+			<p>{{ taxWarningMessage }}</p>
 		</div>
 	{% else %}
-		<div class="hmnet-product-configurator" data-hmnet-product-configurator data-currency-decimals="{{ currencyDecimals }}" data-tax-rate="{{ taxRate }}" data-fields='{{ page.extensions.hmnetConfiguratorFields|default([])|json_encode }}'>
+		<div class="hmnet-product-configurator" data-hmnet-product-configurator data-currency-decimals="{{ currencyDecimals }}" data-tax-rate="{{ taxRate }}" data-fields='{{ page.extensions.hmnetConfiguratorFields|default([])|json_encode }}' data-setup-label-template="{{ setupLabelTemplate|escape('html_attr') }}" data-film-label-template="{{ filmLabelTemplate|escape('html_attr') }}">
 			<h1 class="hmnet-product-configurator__title">
 				{{ product.translated.name }}
 			</h1>
@@ -24,7 +32,6 @@
 					{% if not field.isVisible %}
 						{% continue %}
 					{% endif %}
-					{% set defaultLabel = 'Bitte wählen' %}
 					<div class="hmnet-product-configurator__field" data-hmnet-field data-field-id="{{ field.id }}" data-setup-price="{{ field.setupPrice|default(0) }}" data-film-price="{{ field.filmPrice|default(0) }}" data-options='{{ field.options|json_encode }}'>
 						<div class="hmnet-product-configurator__field__head">
 							<label class="hmnet-product-configurator__field__label" for="hmnet-configurator-field-{{ field.id }}">
@@ -61,24 +68,30 @@
 				{% endfor %}
 			</div>
 			<div class="hmnet-product-configurator__breakdown">
-				<h3 class="hmnet-product-configurator__breakdown__title">Einrichtungs- und Filmkosten</h3>
+				<h3 class="hmnet-product-configurator__breakdown__title">{{ breakdownTitle }}</h3>
 				<ul class="hmnet-product-configurator__breakdown__list" data-hmnet-breakdown-list></ul>
 			</div>
 			<div class="hmnet-product-configurator__total">
 				<div class="hmnet-product-configurator__total__net">
-					<h3>Total net</h3>
-					<span class="odometer value" data-hmnet-product-configurator-total-net>0,00</span>
-					<span class="currency">{{ context.currency.symbol }}</span>
+					<h4>{{ totalNetLabel }}</h4>
+					<div class="hmnet-product-configurator__total__net__price">
+						<span class="odometer value" data-hmnet-product-configurator-total-net>0,00</span>
+						<span class="currency">{{ context.currency.symbol }}</span>
+					</div>
 				</div>
 				<div class="hmnet-product-configurator__total__tax">
-					<h4>Total tax</h4>
-					<span class="odometer value" data-hmnet-product-configurator-total-tax>0,00</span>
-					<span class="currency">{{ context.currency.symbol }}</span>
+					<h5>{{ totalTaxLabel }}</h5>
+					<div class="hmnet-product-configurator__total__tax__price">
+						<span class="odometer value" data-hmnet-product-configurator-total-tax>0,00</span>
+						<span class="currency">{{ context.currency.symbol }}</span>
+					</div>
 				</div>
 				<div class="hmnet-product-configurator__total__gross">
-					<h4>Total gross</h4>
-					<span class="odometer value" data-hmnet-product-configurator-total-gross>0,00</span>
-					<span class="currency">{{ context.currency.symbol }}</span>
+					<h5>{{ totalGrossLabel }}</h5>
+					<div class="hmnet-product-configurator__total__gross__price">
+						<span class="odometer value" data-hmnet-product-configurator-total-gross>0,00</span>
+						<span class="currency">{{ context.currency.symbol }}</span>
+					</div>
 				</div>
 			</div>
 		</div>

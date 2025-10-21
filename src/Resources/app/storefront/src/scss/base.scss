@@ -70,7 +70,6 @@
 			align-items: baseline;
 			gap: 0.25rem;
 			text-align: right;
-			font-variant-numeric: tabular-nums;
 
 			.currency {
 				position: relative;
@@ -101,65 +100,15 @@
 			display: flex;
 			flex-direction: column;
 			gap: 0.25rem;
-		}
 
-		&__item {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0.5rem;
-			justify-content: space-between;
-		}
+			li {
+				display: flex;
+				justify-content: space-between;
 
-		&__item--empty {
-			color: var(--bs-gray-600);
-		}
-
-		.name {
-			font-weight: 600;
-		}
-
-		.prices {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0.75rem;
-			color: var(--bs-gray-700);
-		}
-
-		.price {
-			font-variant-numeric: tabular-nums;
-		}
-
-		&__totals {
-			display: flex;
-			flex-direction: column;
-			gap: 0.35rem;
-		}
-
-		&__totals-row {
-			display: flex;
-			gap: 0.35rem;
-			align-items: baseline;
-		}
-
-		.label {
-			font-weight: 500;
-		}
-	}
-
-	&__aggregates {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-
-		&-row {
-			display: flex;
-			gap: 0.35rem;
-			align-items: baseline;
-			font-weight: 600;
-		}
-
-		.label {
-			font-weight: 500;
+				.price {
+					font-weight: 600;
+				}
+			}
 		}
 	}
 
@@ -179,15 +128,26 @@
 			gap: 0.35rem;
 		}
 
-		h3,
-		h4 {
+		h4,
+		h5 {
 			margin: 0;
 		}
 
-		.value {
+		.value,
+		.currency {
 			font-size: 1.25rem;
 			font-weight: 700;
-			font-variant-numeric: tabular-nums;
+		}
+
+		&__tax,
+		&__gross {
+			text-align: right;
+
+			.value,
+			.currency {
+				font-size: 1rem;
+				font-weight: normal;
+			}
 		}
 	}
 }

@@ -1,0 +1,21 @@
+{
+  "hmnet-configurator": {
+    "taxWarning": {
+      "title": "Nicht unterstützt",
+      "message": "Der Produktkonfigurator unterstützt nur Netto-Preise. Bitte wechseln Sie den Steuerstatus Ihres Shops auf \"Netto\" um den Konfigurator zu verwenden."
+    },
+    "select": {
+      "defaultLabel": "Bitte wählen"
+    },
+    "breakdown": {
+      "title": "Einrichtungs- und Filmkosten",
+      "setupLabel": "Einrichtung: %option%%possibility%",
+      "filmLabel": "Film: %option%%possibility%"
+    },
+    "total": {
+      "net": "Gesamtpreis NETTO",
+      "tax": "zzg. MwSt.",
+      "gross": "Preis inkl. MwSt."
+    }
+  }
+}

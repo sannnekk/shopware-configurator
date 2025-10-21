@@ -1,4 +1,6 @@
 import Plugin from 'src/plugin-system/plugin.class'
+import { CountUp } from './odometer'
+import { Odometer } from './odometer-plugin'
 
 /**
  * HMnet Product Configurator Plugin
@@ -21,6 +23,14 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	 * @type {string[]}
 	 */
 	fieldIds = []
+
+	/**
+	 * @type {{ setup: string, film: string }}
+	 */
+	labelTemplates = {
+		setup: '',
+		film: '',
+	}
 
 	init() {
 		this.registerEvents()
@@ -78,6 +88,11 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	calculate() {
 		this.taxRate = parseFloat(this.el.dataset.taxRate)
 		this.currencyDecimals = parseInt(this.el.dataset.currencyDecimals) || 2
+		this.labelTemplates = {
+			setup:
+				this.el.dataset.setupLabelTemplate || 'Setup: %option%%possibility%',
+			film: this.el.dataset.filmLabelTemplate || 'Film: %option%%possibility%',
+		}
 		this.fieldIds = [...this.el.querySelectorAll('[data-hmnet-field]')]
 			.map((el) => el.dataset.fieldId)
 			.filter(Boolean)
@@ -188,25 +203,32 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			return defaultReturn
 		}
 
+		const optionName = option.translated.name || option.name || ''
+		const possibilityName =
+			possibility.translated.name || possibility.name || ''
+		const multiplicator = possibility.multiplicator ?? 1
+
 		return [
-			this.getUnitPriceForOption(
-				option.priceTiers,
-				possibility.multiplicator,
-				quantity
-			),
+			this.getUnitPriceForOption(option.priceTiers, multiplicator, quantity),
 			chosenPossibilityId,
 			[
 				{
-					label: `Einrichtung: ${option.translated.name} ${
-						possibility.translated.name ? possibility.translated.name : ''
-					}`,
-					price: (setupPrice ?? 0) * (possibility.multiplicator ?? 1),
+					label: this.getLabelFromTemplate(
+						this.labelTemplates.setup,
+						'Einrichtung',
+						optionName,
+						possibilityName
+					),
+					price: (setupPrice ?? 0) * multiplicator,
 				},
 				{
-					label: `Film: ${option.translated.name} ${
-						possibility.translated.name ? possibility.translated.name : ''
-					}`,
-					price: (filmPrice ?? 0) * (possibility.multiplicator ?? 1),
+					label: this.getLabelFromTemplate(
+						this.labelTemplates.film,
+						'Film',
+						optionName,
+						possibilityName
+					),
+					price: (filmPrice ?? 0) * multiplicator,
 				},
 			],
 		]
@@ -268,9 +290,9 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			'[data-hmnet-product-configurator-total-tax]'
 		)
 
-		netPriceEl.innerText = netPrice
-		grossPriceEl.innerText = grossPrice
-		taxAmountEl.innerText = taxAmount
+		this.setNumber(netPriceEl, netPrice, this.currencyDecimals)
+		this.setNumber(grossPriceEl, grossPrice, this.currencyDecimals)
+		this.setNumber(taxAmountEl, taxAmount, this.currencyDecimals)
 	}
 
 	/**
@@ -292,8 +314,46 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		const quantityEl = fieldEl.querySelector('[data-hmnet-field-amount]')
 		const totalPriceEl = fieldEl.querySelector('[data-hmnet-field-unit-total]')
 
-		unitPriceEl.innerText = unitPrice
-		quantityEl.innerText = quantity
-		totalPriceEl.innerText = totalPrice
+		this.setNumber(unitPriceEl, unitPrice, this.currencyDecimals)
+		this.setNumber(quantityEl, quantity, 0)
+		this.setNumber(totalPriceEl, totalPrice, this.currencyDecimals)
+	}
+
+	/**
+	 * @param {number} price
+	 */
+	setNumber(htmlEl, price, decimals = 2) {
+		const prevValue = parseFloat(htmlEl.dataset.counterPrevValue || '0')
+
+		const countUp = new CountUp(htmlEl, price, {
+			plugin: new Odometer({ duration: 0.8, lastDigitDelay: 0 }),
+			startVal: prevValue,
+			duration: 0.8,
+			decimalPlaces: decimals,
+			separator: '.',
+			decimal: ',',
+		})
+		countUp.start()
+
+		htmlEl.dataset.counterPrevValue = price
+	}
+
+	/**
+	 * @param {string} template
+	 * @param {string} fallbackPrefix
+	 * @param {string} optionName
+	 * @param {string} possibilityName
+	 * @returns {string}
+	 */
+	getLabelFromTemplate(template, fallbackPrefix, optionName, possibilityName) {
+		const safeOption = optionName || ''
+		const safePossibility = possibilityName ? ` ${possibilityName}` : ''
+		const baseTemplate = template || `${fallbackPrefix}: %option%%possibility%`
+
+		return baseTemplate
+			.replace(/%option%/g, safeOption)
+			.replace(/%possibility%/g, safePossibility)
+			.replace(/\s+/g, ' ')
+			.trim()
 	}
 }
