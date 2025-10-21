@@ -68,6 +68,7 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					inlineEdit: 'string',
 					allowResize: true,
 					primary: true,
+					width: '200px',
 				},
 				{
 					label: this.$tc('hmnet-configurator.table.columns.isRequired'),
@@ -89,6 +90,7 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					type: 'number',
 					inlineEdit: 'number',
 					allowResize: true,
+					width: '150px',
 				},
 				{
 					label: this.$tc('hmnet-configurator.table.columns.filmPrice'),
@@ -96,6 +98,7 @@ Component.register('sw-product-detail-hmnet-configurator', {
 					type: 'number',
 					inlineEdit: 'number',
 					allowResize: true,
+					width: '150px',
 				},
 				{
 					label: this.$tc('hmnet-configurator.table.columns.options'),

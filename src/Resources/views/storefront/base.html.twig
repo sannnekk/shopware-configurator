@@ -1,0 +1,8 @@
+{% sw_extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_body_script %}
+	{{ parent() }}
+
+	{# Odometer plugin, used to animate numbers #}
+	{% sw_include '@HMnetConfigurator/storefront/lib/hmnet-odometer.html.twig' %}
+{% endblock %}

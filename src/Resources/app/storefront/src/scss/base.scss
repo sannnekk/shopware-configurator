@@ -1,0 +1,193 @@
+.hmnet-product-configurator {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+
+	&__tax-warning {
+		font-size: 0.875rem;
+		margin: 0;
+		padding: 1rem;
+		border: 2px solid var(--bs-yellow);
+		border-radius: 0.25rem;
+
+		h3 {
+			color: var(--bs-yellow);
+		}
+
+		p {
+			margin-bottom: 0;
+		}
+	}
+
+	&__title {
+		font-size: 1.5rem;
+		line-height: 1.9rem !important;
+		margin-bottom: 0.25rem;
+	}
+
+	&__description {
+		margin: 0;
+		color: var(--bs-gray-700);
+	}
+
+	&__fields {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	&__field {
+		display: grid;
+		gap: 0.75rem;
+		grid-template-columns: minmax(0, 1fr) repeat(3, minmax(6rem, auto));
+		align-items: end;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--bs-gray-400);
+
+		&__head {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+		}
+
+		&__label {
+			font-weight: 600;
+			margin: 0;
+		}
+
+		&__options {
+			padding: 0.1rem 0.3rem;
+			border: 1px solid var(--bs-gray-400);
+			border-radius: 4px;
+		}
+
+		&__item-price,
+		&__amount,
+		&__setup-film,
+		&__item-total {
+			display: flex;
+			justify-content: flex-end;
+			align-items: baseline;
+			gap: 0.25rem;
+			text-align: right;
+			font-variant-numeric: tabular-nums;
+
+			.currency {
+				position: relative;
+			}
+		}
+
+		&__item-total {
+			color: var(--bs-dark);
+			font-weight: 600;
+		}
+	}
+
+	&__breakdown {
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+
+		&__title {
+			margin: 0;
+			font-size: 1.1rem;
+		}
+
+		&__list {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 0.25rem;
+		}
+
+		&__item {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+			justify-content: space-between;
+		}
+
+		&__item--empty {
+			color: var(--bs-gray-600);
+		}
+
+		.name {
+			font-weight: 600;
+		}
+
+		.prices {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.75rem;
+			color: var(--bs-gray-700);
+		}
+
+		.price {
+			font-variant-numeric: tabular-nums;
+		}
+
+		&__totals {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+		}
+
+		&__totals-row {
+			display: flex;
+			gap: 0.35rem;
+			align-items: baseline;
+		}
+
+		.label {
+			font-weight: 500;
+		}
+	}
+
+	&__aggregates {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+
+		&-row {
+			display: flex;
+			gap: 0.35rem;
+			align-items: baseline;
+			font-weight: 600;
+		}
+
+		.label {
+			font-weight: 500;
+		}
+	}
+
+	&__total {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		padding: 1rem;
+		background: var(--bs-gray-100);
+		border-radius: 6px;
+
+		&__net,
+		&__tax,
+		&__gross {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+		}
+
+		h3,
+		h4 {
+			margin: 0;
+		}
+
+		.value {
+			font-size: 1.25rem;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+		}
+	}
+}
