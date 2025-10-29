@@ -141,7 +141,11 @@
 	<div class="hmnet-configurator-children__remove-button">
 		<div class="line-item-remove">
 			{% if parentLineItem.removable %}
-				{% embed '@Storefront/storefront/component/line-item/element/remove.html.twig' %}
+				{% embed '@Storefront/storefront/component/line-item/element/remove.html.twig' with {
+					lineItem: parentLineItem,
+					redirectTo: redirectTo,
+					formAction: formAction
+				} %}
 					{% block component_line_item_remove_button %}
 						<button type="submit"
 								aria-label="{{ 'checkout.removeLineItem'|trans({ '%lineItemLabel%': label })|striptags }}"
