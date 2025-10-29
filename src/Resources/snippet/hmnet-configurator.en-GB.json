@@ -16,6 +16,13 @@
       "net": "Total price NET",
       "tax": "plus VAT",
       "gross": "Price incl. VAT"
+    },
+    "cart": {
+      "optionsTitle": "Selected options",
+      "baseTitle": "Product",
+      "quantityLabel": "Quantity",
+      "priceLabel": "Product price",
+      "unitPriceLabel": "Unit price"
     }
   }
 }

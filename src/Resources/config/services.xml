@@ -37,6 +37,7 @@
             <tag name="shopware.cart.processor" />
             <argument type="service" id="HMnet\Configurator\Service\ConfiguratorLineItemHandler" />
             <argument type="service" id="Psr\Log\LoggerInterface" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Tax\TaxCalculator" />
         </service>
 
         <service id="HMnet\Configurator\Service\ConfiguratorLineItemHandler">

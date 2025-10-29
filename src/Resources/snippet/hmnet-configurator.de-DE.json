@@ -16,6 +16,13 @@
       "net": "Gesamtpreis NETTO",
       "tax": "zzg. MwSt.",
       "gross": "Preis inkl. MwSt."
+    },
+    "cart": {
+      "optionsTitle": "Ausgewählte Optionen",
+      "baseTitle": "Produkt",
+      "quantityLabel": "Menge",
+      "priceLabel": "Produktpreis",
+      "unitPriceLabel": "Stückpreis"
     }
   }
 }
