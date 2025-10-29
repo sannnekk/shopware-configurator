@@ -257,9 +257,19 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	/**
 	 * Set all the chosen options in the cart data to be picked up by the server
 	 *
-	 * @param {Record<string, string>} chosenPossibilityIds
+	 * @param {Record<string, string>} chosenPossibilityIds (fieldId => possibilityId)
 	 */
-	setChosenOptionsInCartData(chosenPossibilityIds) {}
+	setChosenOptionsInCartData(chosenPossibilityIds) {
+		const input = document.querySelector('[data-hmnet-configurator-payload]')
+
+		if (!input) {
+			return
+		}
+
+		input.value = JSON.stringify({
+			hmnetProductConfigurator: chosenPossibilityIds,
+		})
+	}
 
 	/**
 	 * Calculates gross price and tax amount from net price, concidering taxRate and currencyDecimals

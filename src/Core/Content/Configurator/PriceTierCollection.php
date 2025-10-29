@@ -34,4 +34,24 @@ class PriceTierCollection implements \JsonSerializable
 	{
 		return $this->tiers;
 	}
+
+	/**
+	 * Get price for given quantity based on tiers
+	 */
+	public function getPrice(int $quantity): float
+	{
+		foreach ($this->tiers as $tier) {
+			$start = $tier['quantityStart'] ?? null;
+			$end = $tier['quantityEnd'] ?? null;
+
+			$startOk = $start === null || $quantity >= $start;
+			$endOk = $end === null || $quantity <= $end;
+
+			if ($startOk && $endOk) {
+				return $tier['price'];
+			}
+		}
+
+		return 0.0;
+	}
 }

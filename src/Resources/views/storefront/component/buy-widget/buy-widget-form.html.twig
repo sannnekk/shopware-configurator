@@ -1,0 +1,12 @@
+{% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
+
+{% block buy_widget_buy_container %}
+	{{ parent() }}
+
+	<input
+		data-hmnet-configurator-payload
+		type="hidden"
+		name="lineItems[{{ product.id }}][payload]"
+		value="[]"
+	/>
+{% endblock %}

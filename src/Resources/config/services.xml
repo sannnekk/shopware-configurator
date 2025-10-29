@@ -33,6 +33,22 @@
             <tag name="kernel.event_subscriber"/>
         </service>
 
+        <service id="HMnet\Configurator\Core\Checkout\Cart\ConfiguratorCartProcessor">
+            <tag name="shopware.cart.processor" />
+            <argument type="service" id="HMnet\Configurator\Service\ConfiguratorLineItemHandler" />
+            <argument type="service" id="Psr\Log\LoggerInterface" />
+        </service>
+
+        <service id="HMnet\Configurator\Service\ConfiguratorLineItemHandler">
+            <tag name="shopware.cart.line_item.factory" />
+        </service>
+
+        <service id="HMnet\Configurator\Core\Checkout\Cart\ConfiguratorCartCollector">
+            <tag name="shopware.cart.collector" />
+            <argument type="service" id="hmnet_configurator_field.repository"/>
+            <argument type="service" id="Psr\Log\LoggerInterface" />
+        </service>
+
 
     </services>
 </container>
