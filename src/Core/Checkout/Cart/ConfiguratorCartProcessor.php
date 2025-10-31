@@ -11,26 +11,30 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use HMnet\Configurator\Core\Content\Configurator\ConfiguratorFieldEntity;
 use HMnet\Configurator\Service\ConfiguratorLineItemHandler;
+use HMnet\Configurator\Service\SetupFilmLineItemHandler;
 use HMnet\Configurator\Utils\FieldUtils;
+use HMnet\Configurator\Utils\PriceUtils;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
-use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Cart\Tax\TaxCalculator;
 
 class ConfiguratorCartProcessor implements CartProcessorInterface
 {
-	private ConfiguratorLineItemHandler $factory;
+	private ConfiguratorLineItemHandler $configuratorFactory;
+
+	private SetupFilmLineItemHandler $setupFilmFactory;
 
 	private LoggerInterface $logger;
 
 	private TaxCalculator $taxCalculator;
 
-	public function __construct(ConfiguratorLineItemHandler $factory, LoggerInterface $logger, TaxCalculator $taxCalculator)
+	public function __construct(ConfiguratorLineItemHandler $configuratorFactory, SetupFilmLineItemHandler $setupFilmFactory, LoggerInterface $logger, TaxCalculator $taxCalculator)
 	{
-		$this->factory = $factory;
+		$this->configuratorFactory = $configuratorFactory;
+		$this->setupFilmFactory = $setupFilmFactory;
 		$this->logger = $logger;
 		$this->taxCalculator = $taxCalculator;
 	}
@@ -45,8 +49,7 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 		$this->addChildrenToCart($data, $toCalculate, $context);
 		$this->adjustChildQuantities($toCalculate);
 		$this->adjustChildPrices($toCalculate, $context);
-
-		// TODO: add setup & film prices
+		$this->addSetupAndFilmPrices($toCalculate, $context);
 	}
 
 	/**
@@ -127,7 +130,7 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 				$child->setPrice($childPrice);
 
 				$childTotalPrice += $childPrice->getTotalPrice();
-				$this->mergeTaxes($childTaxes, $childPrice->getCalculatedTaxes());
+				PriceUtils::mergeTaxes($childTaxes, $childPrice->getCalculatedTaxes());
 			}
 
 			if ($childTotalPrice <= 0.0) {
@@ -137,8 +140,8 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 			$quantity = max(1, $lineItem->getQuantity());
 			$additionalUnitPrice = $childTotalPrice / $quantity;
 
-			$parentTaxes = $this->cloneTaxes($parentPrice->getCalculatedTaxes());
-			$this->mergeTaxes($parentTaxes, $childTaxes);
+			$parentTaxes = PriceUtils::cloneTaxes($parentPrice->getCalculatedTaxes());
+			PriceUtils::mergeTaxes($parentTaxes, $childTaxes);
 
 			// Include configurator child surcharges directly in the parent product price as cart totals only consider top-level items.
 			$parentPrice->overwrite(
@@ -149,6 +152,81 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 		}
 	}
 
+	/**
+	 * Add setup and film prices
+	 */
+	private function addSetupAndFilmPrices(Cart $toCalculate, SalesChannelContext $context): void
+	{
+		foreach ($toCalculate->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE) as $lineItem) {
+			$configuratorChildren = $lineItem->getChildren()->filterFlatByType(ConfiguratorLineItemHandler::TYPE);
+			$taxRules = $lineItem->getPrice()->getTaxRules();
+			$productId = $lineItem->getReferencedId();
+			$productQuantity = $lineItem->getQuantity();
+
+			if (count($configuratorChildren) === 0) {
+				continue;
+			}
+
+			[$lineItemsWithSetupPrice, $lineItemsWithFilmPrice] = FieldUtils::getSetupAndFilmLineItems($configuratorChildren);
+
+			$setupPriceLineItem = $this->setupFilmFactory->create([
+				'productId' => $productId,
+				'taxRules' => $taxRules,
+				'type' => 'setup',
+				'lineItems' => $lineItemsWithSetupPrice
+			], $context);
+			$setupPriceLineItem->setQuantity($productQuantity);
+
+			$filmPriceLineItem = $this->setupFilmFactory->create([
+				'productId' => $productId,
+				'taxRules' => $taxRules,
+				'type' => 'film',
+				'lineItems' => $lineItemsWithFilmPrice
+			], $context);
+			$filmPriceLineItem->setQuantity($productQuantity);
+
+			// attach setup/film line items as children when they contain positions
+			$additionalTotal = 0.0;
+			$additionalTaxes = new CalculatedTaxCollection([]);
+
+			if ($setupPriceLineItem && $setupPriceLineItem->getPrice() && $setupPriceLineItem->getPrice()->getTotalPrice() > 0.0) {
+				$lineItem->addChild($setupPriceLineItem);
+				$additionalTotal += $setupPriceLineItem->getPrice()->getTotalPrice();
+				PriceUtils::mergeTaxes($additionalTaxes, $setupPriceLineItem->getPrice()->getCalculatedTaxes());
+			}
+
+			if ($filmPriceLineItem && $filmPriceLineItem->getPrice() && $filmPriceLineItem->getPrice()->getTotalPrice() > 0.0) {
+				$lineItem->addChild($filmPriceLineItem);
+				$additionalTotal += $filmPriceLineItem->getPrice()->getTotalPrice();
+				PriceUtils::mergeTaxes($additionalTaxes, $filmPriceLineItem->getPrice()->getCalculatedTaxes());
+			}
+
+			if ($additionalTotal <= 0.0) {
+				continue;
+			}
+
+			$quantity = max(1, $lineItem->getQuantity());
+			$additionalUnitPrice = $additionalTotal / $quantity;
+
+			$parentPrice = $lineItem->getPrice();
+			if ($parentPrice === null) {
+				continue;
+			}
+
+			$parentTaxes = PriceUtils::cloneTaxes($parentPrice->getCalculatedTaxes());
+			PriceUtils::mergeTaxes($parentTaxes, $additionalTaxes);
+
+			$parentPrice->overwrite(
+				$parentPrice->getUnitPrice() + $additionalUnitPrice,
+				$parentPrice->getTotalPrice() + $additionalTotal,
+				$parentTaxes
+			);
+		}
+	}
+
+	/**
+	 * Build calculated price for a child line item
+	 */
 	private function buildChildPrice(LineItem $child, TaxRuleCollection $taxRules, SalesChannelContext $context): CalculatedPrice
 	{
 		$quantity = max(1, $child->getQuantity());
@@ -171,6 +249,9 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 		);
 	}
 
+	/**
+	 * Generates taxes for a given amount based on tax rules
+	 */
 	private function calculateTaxes(float $amount, TaxRuleCollection $taxRules, SalesChannelContext $context): CalculatedTaxCollection
 	{
 		if ($amount <= 0.0 || \count($taxRules) === 0) {
@@ -190,36 +271,11 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 		return $this->taxCalculator->calculateGrossTaxes($amount, $taxRules);
 	}
 
-	private function mergeTaxes(CalculatedTaxCollection $target, CalculatedTaxCollection $source): void
-	{
-		foreach ($source as $tax) {
-			$taxClone = new CalculatedTax($tax->getTax(), $tax->getTaxRate(), $tax->getPrice(), $tax->getLabel());
-			$existing = $target->get((string) $tax->getTaxRate());
-
-			if ($existing instanceof CalculatedTax) {
-				$existing->increment($taxClone);
-
-				continue;
-			}
-
-			$target->add($taxClone);
-		}
-	}
-
-	private function cloneTaxes(CalculatedTaxCollection $taxes): CalculatedTaxCollection
-	{
-		$cloned = new CalculatedTaxCollection([]);
-
-		foreach ($taxes as $tax) {
-			$cloned->add(new CalculatedTax($tax->getTax(), $tax->getTaxRate(), $tax->getPrice(), $tax->getLabel()));
-		}
-
-		return $cloned;
-	}
-
 	/**
+	 * Generates child line items from field entities and payload
+	 * 
 	 * @param EntityCollection<ConfiguratorFieldEntity> $fields
-	 * @param array<string, string> $payload - fieldId => $chosenPossibilityId
+	 * @param array<string, string> $payload `fieldId => $chosenPossibilityId`
 	 * @param int $quantity
 	 * @param SalesChannelContext $context
 	 * @return array<\Shopware\Core\Checkout\Cart\LineItem\LineItem>
@@ -231,7 +287,7 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 		foreach ($fieldEntities as $field) {
 			$chosenPossibilityId = $payload[$field->id] ?? null;
 
-			$child = $this->factory->create([
+			$child = $this->configuratorFactory->create([
 				'type' => ConfiguratorLineItemHandler::TYPE,
 				'referencedId' => $field->id,
 				'quantity' => $quantity,

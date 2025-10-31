@@ -19,6 +19,7 @@
     },
     "cart": {
       "optionsTitle": "Ausgewählte Optionen",
+      "setupFilmTitle": "Einrichtungs- & Filmkosten",
       "baseTitle": "Produkt",
       "quantityLabel": "Menge",
       "priceLabel": "Produktpreis",

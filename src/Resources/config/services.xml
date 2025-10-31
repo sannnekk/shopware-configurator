@@ -36,12 +36,18 @@
         <service id="HMnet\Configurator\Core\Checkout\Cart\ConfiguratorCartProcessor">
             <tag name="shopware.cart.processor" />
             <argument type="service" id="HMnet\Configurator\Service\ConfiguratorLineItemHandler" />
+            <argument type="service" id="HMnet\Configurator\Service\SetupFilmLineItemHandler" />
             <argument type="service" id="Psr\Log\LoggerInterface" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\Tax\TaxCalculator" />
         </service>
 
         <service id="HMnet\Configurator\Service\ConfiguratorLineItemHandler">
             <tag name="shopware.cart.line_item.factory" />
+        </service>
+
+        <service id="HMnet\Configurator\Service\SetupFilmLineItemHandler">
+            <tag name="shopware.cart.line_item.factory" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Tax\TaxCalculator" />
         </service>
 
         <service id="HMnet\Configurator\Core\Checkout\Cart\ConfiguratorCartCollector">

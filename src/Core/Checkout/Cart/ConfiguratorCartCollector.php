@@ -42,8 +42,6 @@ class ConfiguratorCartCollector implements CartDataCollectorInterface
 			$fieldEntities = $this->fetchFieldEntities($payload, $context);
 			$lineItemId = $lineItem->getId();
 
-			$this->logger->info('Collecting data for line item', ['lineItem' => $lineItem->getLabel(), 'payload' => $payload, 'fieldEntitiesCount' => $fieldEntities->count()]);
-
 			$data->set($lineItemId, [$payload, $fieldEntities]);
 			$lineItem->removePayloadValue(self::PAYLOAD_KEY);
 		}
@@ -61,8 +59,6 @@ class ConfiguratorCartCollector implements CartDataCollectorInterface
 		$criteria = new Criteria(array_keys($payload));
 		$criteria->addAssociation('options.possibilities');
 		$criteria->setLimit(50);
-
-		$this->logger->info('Fetching field entities', ['fieldIds' => array_keys($payload), 'criteria' => $criteria]);
 
 		return $this->fieldRepository->search($criteria, $context->getContext())->getEntities();
 	}

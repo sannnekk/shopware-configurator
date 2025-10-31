@@ -4,9 +4,11 @@
 	{{ parent() }}
 
 	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
+	{% set setupFilmChildren = lineItem.children.filterType('hmnet-configurator-setup-film') %}
 	{% if configuratorChildren|length > 0 %}
 		{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator-children.html.twig' with {
 			children: configuratorChildren,
+			setupFilmChildren: setupFilmChildren,
 			parentLineItem: lineItem,
 			displayMode: displayMode|default('default'),
 			order: order|default(null),

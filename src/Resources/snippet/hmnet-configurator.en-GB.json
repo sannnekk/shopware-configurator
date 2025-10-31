@@ -19,6 +19,7 @@
     },
     "cart": {
       "optionsTitle": "Selected options",
+      "setupFilmTitle": "Setup and film costs",
       "baseTitle": "Product",
       "quantityLabel": "Quantity",
       "priceLabel": "Product price",

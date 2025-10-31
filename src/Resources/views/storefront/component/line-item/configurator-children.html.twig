@@ -1,67 +1,63 @@
 {% set currencyIso = context.currency.isoCode %}
 {% if displayMode == 'order' and order is not null %}
-    {% set currencyIso = order.currency.isoCode %}
+	{% set currencyIso = order.currency.isoCode %}
 {% endif %}
 
-{% set title = 'hmnet-configurator.cart.optionsTitle'|trans|sw_sanitize %}
-{% set baseTitle = 'hmnet-configurator.cart.baseTitle'|trans|sw_sanitize %}
-{% set quantityLabel = 'hmnet-configurator.cart.quantityLabel'|trans|sw_sanitize %}
-{% set priceLabel = 'hmnet-configurator.cart.priceLabel'|trans|sw_sanitize %}
-{% set unitPriceLabel = 'hmnet-configurator.cart.unitPriceLabel'|trans|sw_sanitize %}
 {% set baseData = parentLineItem.payload.hmnetConfiguratorBasePrice ?? {} %}
 {% set baseTotal = baseData.total ?? null %}
 {% set baseUnitPrice = baseData.unit ?? null %}
 
 {% if baseUnitPrice is null and parentLineItem.price %}
-    {% set baseUnitPrice = parentLineItem.price.unitPrice %}
+	{% set baseUnitPrice = parentLineItem.price.unitPrice %}
 {% endif %}
 {% if baseTotal is null and parentLineItem.price %}
-    {% set baseTotal = parentLineItem.price.totalPrice %}
+	{% set baseTotal = parentLineItem.price.totalPrice %}
 {% endif %}
 
 {% set showLineItemModal = activeRoute is defined and activeRoute is same as('frontend.checkout.confirm.page') %}
 
 {% if displayMode != 'order' or parentLineItem.productId %}
-    {% set lineItemLink = seoUrl('frontend.detail.page', { productId: parentLineItem.referencedId }) %}
+	{% set lineItemLink = seoUrl('frontend.detail.page', { productId: parentLineItem.referencedId }) %}
 {% else %}
-    {% set lineItemLink = null %}
+	{% set lineItemLink = null %}
 {% endif %}
 
 {% if showLineItemModal %}
-    {% set lineItemModalLink = path('widgets.quickview.minimal', { productId: parentLineItem.referencedId }) %}
+	{% set lineItemModalLink = path('widgets.quickview.minimal', { productId: parentLineItem.referencedId }) %}
 {% else %}
-    {% set lineItemModalLink = false %}
+	{% set lineItemModalLink = false %}
 {% endif %}
 
 {% set deliveryTimeName = null %}
 {% if parentLineItem.deliveryInformation and parentLineItem.deliveryInformation.deliveryTime %}
-    {% set deliveryEntity = parentLineItem.deliveryInformation.deliveryTime %}
-    {% set deliveryTimeName = deliveryEntity.translated.name ?? deliveryEntity.name %}
+	{% set deliveryEntity = parentLineItem.deliveryInformation.deliveryTime %}
+	{% set deliveryTimeName = deliveryEntity.translated.name ?? deliveryEntity.name %}
 {% endif %}
 
 <div class="hmnet-configurator-children" data-hmnet-configurator-children="true">
-    <div class="hmnet-configurator-children__header">
-        <div class="hmnet-configurator-children__image">
-            {% sw_include '@Storefront/storefront/component/line-item/element/image.html.twig' with {
+	<div class="hmnet-configurator-children__header">
+		<div class="hmnet-configurator-children__image">
+			{% sw_include '@Storefront/storefront/component/line-item/element/image.html.twig' with {
                 lineItem: parentLineItem,
                 lineItemLink: lineItemLink,
                 lineItemModalLink: lineItemModalLink
             } %}
-        </div>
-        <div class="hmnet-configurator-children__info">
-            <div class="hmnet-configurator-children__product-name">
-                {% sw_include '@Storefront/storefront/component/line-item/element/label.html.twig' with {
+		</div>
+		<div class="hmnet-configurator-children__info">
+			<div class="hmnet-configurator-children__product-name">
+				{% sw_include '@Storefront/storefront/component/line-item/element/label.html.twig' with {
                     lineItem: parentLineItem,
                     lineItemLink: lineItemLink,
                     lineItemModalLink: lineItemModalLink
                 } %}
-            </div>
-            {% if parentLineItem.payload.productNumber %}
-                <div class="hmnet-configurator-children__product-number">
-                    {{ 'checkout.cartItemInfoId'|trans|sw_sanitize }} {{ parentLineItem.payload.productNumber }}
-                </div>
-            {% endif %}
-			
+			</div>
+			{% if parentLineItem.payload.productNumber %}
+				<div class="hmnet-configurator-children__product-number">
+					{{ 'checkout.cartItemInfoId'|trans|sw_sanitize }}
+					{{ parentLineItem.payload.productNumber }}
+				</div>
+			{% endif %}
+
 			{% if config('core.cart.wishlistEnabled') %}
 				{% block component_line_item_type_product_wishlist %}
 					{% sw_include '@Storefront/storefront/component/product/card/wishlist.html.twig' with {
@@ -72,51 +68,79 @@
 				{% endblock %}
 			{% endif %}
 
-            {% if config('core.cart.showDeliveryTime') and parentLineItem.deliveryInformation %}
-                <div class="hmnet-configurator-children__delivery">
-                    {% if page is defined %}
-                        {% sw_include '@Storefront/storefront/component/line-item/element/delivery-date.html.twig' with {
+			{% if config('core.cart.showDeliveryTime') and parentLineItem.deliveryInformation %}
+				<div class="hmnet-configurator-children__delivery">
+					{% if page is defined %}
+						{% sw_include '@Storefront/storefront/component/line-item/element/delivery-date.html.twig' with {
                             lineItem: parentLineItem
                         } %}
-                    {% elseif deliveryTimeName %}
-                        {{ deliveryTimeName|sw_sanitize }}
-                    {% endif %}
-                </div>
-            {% endif %}
-            <div class="hmnet-configurator-children__base-summary">
+					{% elseif deliveryTimeName %}
+						{{ deliveryTimeName|sw_sanitize }}
+					{% endif %}
+				</div>
+			{% endif %}
+			<div class="hmnet-configurator-children__base-summary">
 				{% if baseUnitPrice is not null %}
-                    <span class="hmnet-configurator-children__base-unit">
-                        {{ baseUnitPrice|currency(currencyIso) }}
-                    </span>
-                {% endif %}
-                <span class="hmnet-configurator-children__base-quantity">
+					<span class="hmnet-configurator-children__base-unit">
+						{{ baseUnitPrice|currency(currencyIso) }}
+					</span>
+				{% endif %}
+				<span class="hmnet-configurator-children__base-quantity">
 					×{{ parentLineItem.quantity }}
-                </span>
-                {% if baseTotal is not null %}
-                    <span class="hmnet-configurator-children__base-price">
-                        {{ baseTotal|currency(currencyIso) }}
-                    </span>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="hmnet-configurator-children__title">{{ title }}:</div>
-    <ul class="hmnet-configurator-children__list">
-        {% for child in children %}
-            <li class="hmnet-configurator-children__item">
-                <span class="hmnet-configurator-children__name">{{ child.label|sw_sanitize }}</span>
+				</span>
+				{% if baseTotal is not null %}
+					<span class="hmnet-configurator-children__base-price">
+						{{ baseTotal|currency(currencyIso) }}
+					</span>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<div class="hmnet-configurator-children__title">
+		{{ 'hmnet-configurator.cart.optionsTitle'|trans|sw_sanitize }}:
+	</div>
+	<ul class="hmnet-configurator-children__list">
+		{% for child in children %}
+			<li class="hmnet-configurator-children__item">
+				<span class="hmnet-configurator-children__name">{{ child.label|sw_sanitize }}</span>
 				<span class="hmnet-configurator-children__unit-price">
 					{{ child.price.unitPrice|currency(currencyIso) }}
 				</span>
-                <span class="hmnet-configurator-children__quantity">×{{ child.quantity }}</span>
-                {% if child.price %}
-                    <span class="hmnet-configurator-children__price">
-                        {{ child.price.totalPrice|currency(currencyIso) }}
-                    </span>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+				<span class="hmnet-configurator-children__quantity">×{{ child.quantity }}</span>
+				{% if child.price %}
+					<span class="hmnet-configurator-children__price">
+						{{ child.price.totalPrice|currency(currencyIso) }}
+					</span>
+				{% endif %}
+			</li>
+		{% endfor %}
+	</ul>
+	<ul class="hmnet-configurator-children__list hmnet-configurator-children__list--setup-film">
+		{% for child in setupFilmChildren %}
+			<li class="hmnet-configurator-children__item">
+				<div class="hmnet-configurator-children__name hmnet-configurator-children__name--setup-film">
+					{{ child.label|sw_sanitize }}
+				</div>
+				{% if child.price %}
+					<span class="hmnet-configurator-children__price">
+						{{ child.price.totalPrice|currency(currencyIso) }}
+					</span>
+				{% endif %}
+			</li>
+			{% for option in child.payload.positions %}
+				<li class="hmnet-configurator-children__item nested-item">
+					<div class="hmnet-configurator-children__name hmnet-configurator-children__name--setup-film">
+						{{ option.label|sw_sanitize }}
+					</div>
+					{% if option.price %}
+						<span class="hmnet-configurator-children__price">
+							{{ option.price|currency(currencyIso) }}
+						</span>
+					{% endif %}
+				</li>
+			{% endfor %}
+		{% endfor %}
+	</ul>
 	<div class="hmnet-configurator-children__quantity-input">
 		{% sw_include '@Storefront/storefront/component/line-item/element/quantity.html.twig' with {
 			lineItem: parentLineItem,
@@ -147,11 +171,7 @@
 					formAction: formAction
 				} %}
 					{% block component_line_item_remove_button %}
-						<button type="submit"
-								aria-label="{{ 'checkout.removeLineItem'|trans({ '%lineItemLabel%': label })|striptags }}"
-								title="{{ 'global.default.remove'|trans }}"
-								data-product-id="{{ lineItem.id }}"
-								class="btn btn-outline-secondary btn-sm line-item-remove-button">
+						<button type="submit" aria-label="{{ 'checkout.removeLineItem'|trans({ '%lineItemLabel%': label })|striptags }}" title="{{ 'global.default.remove'|trans }}" data-product-id="{{ lineItem.id }}" class="btn btn-outline-secondary btn-sm line-item-remove-button">
 							Vom Warenkorb entfernen
 						</button>
 					{% endblock %}

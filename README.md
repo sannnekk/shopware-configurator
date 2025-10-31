@@ -53,7 +53,3 @@ For questions or contributions, open an issue or submit a pull request in the re
 - When adding the same product with different options to the cart, the amount on some options in neighbour line items may update and not be equal the quantity of the parent
 - Removing and changing quantity in the cart trigger an exception
 - Bad ui on the checkout page when showing line items, as their ui is not optimized for wide screen
-
-## TODO
-
-- Add calculation and adding nested line items for the setup and film prices

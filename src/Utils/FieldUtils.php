@@ -48,4 +48,30 @@ class FieldUtils
 	{
 		return (new PriceTierCollection($priceTiers))->getPrice($quantity);
 	}
+
+	/**
+	 * Gets lists of line items with setup and film prices from given line items
+	 * 
+	 * @param array<\Shopware\Core\Checkout\Cart\LineItem\LineItem> $lineItems
+	 * @return array{array<\Shopware\Core\Checkout\Cart\LineItem\LineItem>, array<\Shopware\Core\Checkout\Cart\LineItem\LineItem>}
+	 */
+	public static function getSetupAndFilmLineItems(array $lineItems): array
+	{
+		$lineItemsWithSetupPrice = [];
+		$lineItemsWithFilmPrice = [];
+
+		foreach ($lineItems as $lineItem) {
+			$payload = $lineItem->getPayload();
+
+			if (isset($payload['setupPrice']) && $payload['filmPrice'] > 0) {
+				$lineItemsWithSetupPrice[] = $lineItem;
+			}
+
+			if (isset($payload['filmPrice']) && $payload['filmPrice'] > 0) {
+				$lineItemsWithFilmPrice[] = $lineItem;
+			}
+		}
+
+		return [$lineItemsWithSetupPrice, $lineItemsWithFilmPrice];
+	}
 }
