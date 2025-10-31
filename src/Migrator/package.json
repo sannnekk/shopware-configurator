@@ -1,0 +1,19 @@
+{
+  "name": "hmnet-configurator-migrator",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "migrate": "node main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "mysql2": "^3.10.3",
+    "ora": "^8.1.1"
+  }
+}

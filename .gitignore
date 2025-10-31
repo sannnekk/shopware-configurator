@@ -1,3 +1,5 @@
 .tmp
 .vite
 src/Resources/public/administration/assets
+node_modules
+src/Migrator/output
