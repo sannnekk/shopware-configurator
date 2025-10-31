@@ -9,7 +9,7 @@
 			<p>{{ 'hmnet-configurator.taxWarning.message'|trans }}</p>
 		</div>
 	{% else %}
-		<div class="hmnet-product-configurator" data-hmnet-product-configurator data-currency-decimals="{{ currencyDecimals }}" data-tax-rate="{{ taxRate }}" data-setup-label-template="{{ 'hmnet-configurator.breakdown.setupLabel'|trans|escape('html_attr') }}" data-film-label-template="{{ 'hmnet-configurator.breakdown.filmLabel'|trans|escape('html_attr') }}">
+		<div class="hmnet-product-configurator" data-hmnet-product-configurator data-currency-decimals="{{ currencyDecimals }}" data-currency-symbol="{{ context.currency.symbol }}" data-tax-rate="{{ taxRate }}" data-setup-label-template="{{ 'hmnet-configurator.breakdown.setupLabel'|trans|escape('html_attr') }}" data-film-label-template="{{ 'hmnet-configurator.breakdown.filmLabel'|trans|escape('html_attr') }}">
 			<h1 class="hmnet-product-configurator__title">
 				{{ product.translated.name }}
 			</h1>
@@ -60,7 +60,7 @@
 			</div>
 			<div class="hmnet-product-configurator__breakdown">
 				<h3 class="hmnet-product-configurator__breakdown__title">
-				{{ 'hmnet-configurator.breakdown.title'|trans }}
+					{{ 'hmnet-configurator.breakdown.title'|trans }}
 				</h3>
 				<ul class="hmnet-product-configurator__breakdown__list" data-hmnet-breakdown-list></ul>
 			</div>

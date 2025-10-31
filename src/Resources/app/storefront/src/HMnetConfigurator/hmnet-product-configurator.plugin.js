@@ -88,6 +88,7 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	calculate() {
 		this.taxRate = parseFloat(this.el.dataset.taxRate)
 		this.currencyDecimals = parseInt(this.el.dataset.currencyDecimals) || 2
+		this.currencySymbol = this.el.dataset.currencySymbol || ''
 		this.labelTemplates = {
 			setup:
 				this.el.dataset.setupLabelTemplate || 'Setup: %option%%possibility%',
@@ -160,7 +161,7 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	getOptionTemplate(label, price) {
 		return `<li>
 			<span>${label}</span>
-			<span>${price}</span>
+			<span>${price.toFixed(this.currencyDecimals)} ${this.currencySymbol}</span>
 		</li>`
 	}
 
