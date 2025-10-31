@@ -1,0 +1,28 @@
+{% if setupFilmChildren and setupFilmChildren|length > 0 %}
+	<ul class="hmnet-configurator-children__list hmnet-configurator-children__list--setup-film">
+		{% for child in setupFilmChildren %}
+			<li class="hmnet-configurator-children__item">
+				<div class="hmnet-configurator-children__name hmnet-configurator-children__name--setup-film">
+					{{ child.label|sw_sanitize }}
+				</div>
+				{% if child.price %}
+					<span class="hmnet-configurator-children__price">
+						{{ child.price.totalPrice|currency(currencyIso) }}
+					</span>
+				{% endif %}
+			</li>
+			{% for option in child.payload.positions|default([]) %}
+				<li class="hmnet-configurator-children__item nested-item">
+					<div class="hmnet-configurator-children__name hmnet-configurator-children__name--setup-film">
+						{{ option.label|sw_sanitize }}
+					</div>
+					{% if option.price is not empty %}
+						<span class="hmnet-configurator-children__price">
+							{{ option.price|currency(currencyIso) }}
+						</span>
+					{% endif %}
+				</li>
+			{% endfor %}
+		{% endfor %}
+	</ul>
+{% endif %}

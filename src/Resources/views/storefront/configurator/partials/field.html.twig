@@ -1,0 +1,33 @@
+<div class="hmnet-product-configurator__field" data-hmnet-field data-field-id="{{ field.id }}" data-setup-price="{{ field.setupPrice|default(0) }}" data-film-price="{{ field.filmPrice|default(0) }}" data-options='{{ field.options|json_encode|e('html_attr') }}'>
+	<div class="hmnet-product-configurator__field__head">
+		<label class="hmnet-product-configurator__field__label" for="hmnet-configurator-field-{{ field.id }}">
+			{{ field.translated.name }}
+		</label>
+		<select class="hmnet-product-configurator__field__options" id="hmnet-configurator-field-{{ field.id }}" data-hmnet-field-select>
+			{% if not field.isRequired %}
+				<option value="">
+					{{ defaultSelectLabel|sw_sanitize }}
+				</option>
+			{% endif %}
+			{% for option in field.options %}
+				{% for possibility in option.possibilities %}
+					<option value="{{ possibility.id }}">
+						{{ option.translated.name|default(option.name) }}
+						{{ possibility.translated.name|default(possibility.name) }}
+					</option>
+				{% endfor %}
+			{% endfor %}
+		</select>
+	</div>
+	<div class="hmnet-product-configurator__field__item-price">
+		<span class="odometer value" data-hmnet-field-unit-price>0,00</span>
+		<span class="currency">{{ currencySymbol }}</span>
+	</div>
+	<div class="hmnet-product-configurator__field__amount">
+		<span class="odometer value" data-hmnet-field-amount>0</span>
+	</div>
+	<div class="hmnet-product-configurator__field__item-total">
+		<span class="odometer value" data-hmnet-field-unit-total>0,00</span>
+		<span class="currency">{{ currencySymbol }}</span>
+	</div>
+</div>

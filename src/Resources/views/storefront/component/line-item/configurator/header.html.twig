@@ -1,0 +1,60 @@
+<div class="hmnet-configurator-children__header">
+	<div class="hmnet-configurator-children__image">
+		{% sw_include '@Storefront/storefront/component/line-item/element/image.html.twig' with {
+			lineItem: parentLineItem,
+			lineItemLink: lineItemLink,
+			lineItemModalLink: lineItemModalLink
+		} only %}
+	</div>
+	<div class="hmnet-configurator-children__info">
+		<div class="hmnet-configurator-children__product-name">
+			{% sw_include '@Storefront/storefront/component/line-item/element/label.html.twig' with {
+				lineItem: parentLineItem,
+				lineItemLink: lineItemLink,
+				lineItemModalLink: lineItemModalLink
+			} only %}
+		</div>
+
+		{% if parentLineItem.payload.productNumber %}
+			<div class="hmnet-configurator-children__product-number">
+				{{ 'checkout.cartItemInfoId'|trans|sw_sanitize }}
+				{{ parentLineItem.payload.productNumber }}
+			</div>
+		{% endif %}
+
+		{% if wishlistEnabled %}
+			{# Keep wishlist control available when enabled #}
+			{% sw_include '@Storefront/storefront/component/product/card/wishlist.html.twig' with {
+				showText: true,
+				size: 'sm',
+				productId: parentLineItem.referencedId
+			} only %}
+		{% endif %}
+
+		{% if showDeliveryDate and parentLineItem.deliveryInformation %}
+			<div class="hmnet-configurator-children__delivery">
+				{% if page is not null %}
+					{% sw_include '@Storefront/storefront/component/line-item/element/delivery-date.html.twig' with {
+						lineItem: parentLineItem
+					} only %}
+				{% elseif deliveryTimeName %}
+					{{ deliveryTimeName|sw_sanitize }}
+				{% endif %}
+			</div>
+		{% endif %}
+
+		<div class="hmnet-configurator-children__base-summary">
+			{% if baseUnitPrice is not null %}
+				<span class="hmnet-configurator-children__base-unit">
+					{{ baseUnitPrice|currency(currencyIso) }}
+				</span>
+			{% endif %}
+			<span class="hmnet-configurator-children__base-quantity">×{{ parentLineItem.quantity }}</span>
+			{% if baseTotal is not null %}
+				<span class="hmnet-configurator-children__base-price">
+					{{ baseTotal|currency(currencyIso) }}
+				</span>
+			{% endif %}
+		</div>
+	</div>
+</div>

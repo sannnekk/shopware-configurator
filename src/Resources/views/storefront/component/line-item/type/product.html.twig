@@ -1,11 +1,13 @@
 {% sw_extends '@Storefront/storefront/component/line-item/type/product.html.twig' %}
 
+{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
+{% set setupFilmChildren = lineItem.children.filterType('hmnet-configurator-setup-film') %}
+{% set hasConfiguratorChildren = configuratorChildren|length > 0 %}
+
 {% block component_line_item_type_product_details_container %}
 	{{ parent() }}
 
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% set setupFilmChildren = lineItem.children.filterType('hmnet-configurator-setup-film') %}
-	{% if configuratorChildren|length > 0 %}
+	{% if hasConfiguratorChildren %}
 		{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator-children.html.twig' with {
 			children: configuratorChildren,
 			setupFilmChildren: setupFilmChildren,
@@ -21,64 +23,55 @@
 {% endblock %}
 
 {% block component_line_item_type_product_image %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_label %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_number %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_delivery_date %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_col_remove %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_col_quantity %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_col_unit_price %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_col_total_price %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}
 
 {% block component_line_item_type_product_wishlist %}
-	{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-	{% if configuratorChildren|length == 0 %}
+	{% if not hasConfiguratorChildren %}
 		{{ parent() }}
 	{% endif %}
 {% endblock %}

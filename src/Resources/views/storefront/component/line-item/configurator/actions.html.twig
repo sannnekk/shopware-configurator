@@ -1,0 +1,43 @@
+<div class="hmnet-configurator-children__quantity-input">
+	{% sw_include '@Storefront/storefront/component/line-item/element/quantity.html.twig' with {
+		lineItem: parentLineItem,
+		displayMode: 'default',
+		showQuantitySelect: true,
+		redirectTo: redirectTo,
+		formAction: formAction
+	} only %}
+</div>
+<div class="hmnet-configurator-children__total-price">
+	{% embed '@Storefront/storefront/component/line-item/element/total-price.html.twig' with {
+		currency: orderCurrencyIso,
+		lineItem: parentLineItem,
+		displayMode: displayMode,
+		order: order
+	} only %}
+		{% block component_line_item_total_price_label %}
+			<div class="hmnet-configurator-children__total-price__label">
+				{{ 'checkout.cartHeaderTotalPrice'|trans|sw_sanitize }}:
+			</div>
+		{% endblock %}
+	{% endembed %}
+</div>
+<div class="hmnet-configurator-children__remove-button">
+	<div class="line-item-remove">
+		{% if parentLineItem.removable %}
+			{% embed '@Storefront/storefront/component/line-item/element/remove.html.twig' with {
+				lineItem: parentLineItem,
+				redirectTo: redirectTo,
+				redirectParameters: redirectParameters,
+				formAction: formAction,
+				displayMode: displayMode,
+				label: parentLineItem.label
+			} only %}
+				{% block component_line_item_remove_button %}
+					<button type="submit" aria-label="{{ 'checkout.removeLineItem'|trans({ '%lineItemLabel%': label })|striptags }}" title="{{ 'global.default.remove'|trans }}" data-product-id="{{ lineItem.id }}" class="btn btn-outline-secondary btn-sm line-item-remove-button">
+						Vom Warenkorb entfernen
+					</button>
+				{% endblock %}
+			{% endembed %}
+		{% endif %}
+	</div>
+</div>

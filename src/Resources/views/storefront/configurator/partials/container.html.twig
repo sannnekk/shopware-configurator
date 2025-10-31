@@ -1,0 +1,17 @@
+<div class="hmnet-product-configurator" data-hmnet-product-configurator data-currency-decimals="{{ currencyDecimals }}" data-currency-symbol="{{ currencySymbol }}" data-tax-rate="{{ taxRate }}" data-setup-label-template="{{ setupLabelTemplate }}" data-film-label-template="{{ filmLabelTemplate }}">
+	{% sw_include '@HMnetConfigurator/storefront/configurator/partials/header.html.twig' with {
+		product: product
+	} only %}
+
+	{% sw_include '@HMnetConfigurator/storefront/configurator/partials/fields.html.twig' with {
+		fields: fields,
+		currencySymbol: currencySymbol,
+		defaultSelectLabel: defaultSelectLabel
+	} only %}
+
+	{% sw_include '@HMnetConfigurator/storefront/configurator/partials/breakdown.html.twig' only %}
+
+	{% sw_include '@HMnetConfigurator/storefront/configurator/partials/totals.html.twig' with {
+		currencySymbol: currencySymbol
+	} only %}
+</div>

@@ -1,92 +1,25 @@
 {% block hmnet_product_configurator %}
-	{% set currencyDecimals = context.currency.itemRounding.decimals ?? 2 %}
-	{% set taxRate = product.tax ? product.tax.taxRate : 0 %}
 	{% set taxState = context.taxState %}
 
 	{% if taxState != 'net' %}
-		<div class="hmnet-product-configurator__tax-warning">
-			<h3>{{ 'hmnet-configurator.taxWarning.title'|trans }}</h3>
-			<p>{{ 'hmnet-configurator.taxWarning.message'|trans }}</p>
-		</div>
+		{% sw_include '@HMnetConfigurator/storefront/configurator/partials/tax-warning.html.twig' %}
 	{% else %}
-		<div class="hmnet-product-configurator" data-hmnet-product-configurator data-currency-decimals="{{ currencyDecimals }}" data-currency-symbol="{{ context.currency.symbol }}" data-tax-rate="{{ taxRate }}" data-setup-label-template="{{ 'hmnet-configurator.breakdown.setupLabel'|trans|escape('html_attr') }}" data-film-label-template="{{ 'hmnet-configurator.breakdown.filmLabel'|trans|escape('html_attr') }}">
-			<h1 class="hmnet-product-configurator__title">
-				{{ product.translated.name }}
-			</h1>
-			{% if product.translated.metaDescription %}
-				<p class="hmnet-product-configurator__description">
-					{{ product.translated.metaDescription }}
-				</p>
-			{% endif %}
-			<div class="hmnet-product-configurator__fields">
-				{% for field in page.extensions.hmnetConfiguratorFields|default([]) %}
-					{% if not field.isVisible %}
-						{% continue %}
-					{% endif %}
-					<div class="hmnet-product-configurator__field" data-hmnet-field data-field-id="{{ field.id }}" data-setup-price="{{ field.setupPrice|default(0) }}" data-film-price="{{ field.filmPrice|default(0) }}" data-options='{{ field.options|json_encode }}'>
-						<div class="hmnet-product-configurator__field__head">
-							<label class="hmnet-product-configurator__field__label" for="hmnet-configurator-field-{{ field.id }}">
-								{{ field.translated.name }}
-							</label>
-							<select class="hmnet-product-configurator__field__options" id="hmnet-configurator-field-{{ field.id }}" data-hmnet-field-select>
-								{% if not field.isRequired %}
-									<option value="">
-										{{ 'hmnet-configurator.select.defaultLabel'|trans }}
-									</option>
-								{% endif %}
-								{% for option in field.options %}
-									{% for possibility in option.possibilities %}
-										<option value="{{ possibility.id }}">
-											{{ option.translated.name|default(option.name) }}
-											{{ possibility.translated.name|default(possibility.name) }}
-										</option>
-									{% endfor %}
-								{% endfor %}
-							</select>
-						</div>
-						<div class="hmnet-product-configurator__field__item-price">
-							<span class="odometer value" data-hmnet-field-unit-price>0,00</span>
-							<span class="currency">{{ context.currency.symbol }}</span>
-						</div>
-						<div class="hmnet-product-configurator__field__amount">
-							<span class="odometer value" data-hmnet-field-amount>0</span>
-						</div>
-						<div class="hmnet-product-configurator__field__item-total">
-							<span class="odometer value" data-hmnet-field-unit-total>0,00</span>
-							<span class="currency">{{ context.currency.symbol }}</span>
-						</div>
-					</div>
-				{% endfor %}
-			</div>
-			<div class="hmnet-product-configurator__breakdown">
-				<h3 class="hmnet-product-configurator__breakdown__title">
-					{{ 'hmnet-configurator.breakdown.title'|trans }}
-				</h3>
-				<ul class="hmnet-product-configurator__breakdown__list" data-hmnet-breakdown-list></ul>
-			</div>
-			<div class="hmnet-product-configurator__total">
-				<div class="hmnet-product-configurator__total__net">
-					<h4>{{ 'hmnet-configurator.total.net'|trans }}</h4>
-					<div class="hmnet-product-configurator__total__net__price">
-						<span class="odometer value" data-hmnet-product-configurator-total-net>0,00</span>
-						<span class="currency">{{ context.currency.symbol }}</span>
-					</div>
-				</div>
-				<div class="hmnet-product-configurator__total__tax">
-					<h5>{{ 'hmnet-configurator.total.tax'|trans }}</h5>
-					<div class="hmnet-product-configurator__total__tax__price">
-						<span class="odometer value" data-hmnet-product-configurator-total-tax>0,00</span>
-						<span class="currency">{{ context.currency.symbol }}</span>
-					</div>
-				</div>
-				<div class="hmnet-product-configurator__total__gross">
-					<h5>{{ 'hmnet-configurator.total.gross'|trans }}</h5>
-					<div class="hmnet-product-configurator__total__gross__price">
-						<span class="odometer value" data-hmnet-product-configurator-total-gross>0,00</span>
-						<span class="currency">{{ context.currency.symbol }}</span>
-					</div>
-				</div>
-			</div>
-		</div>
+		{% set currencyDecimals = context.currency.itemRounding.decimals ?? 2 %}
+		{% set taxRate = product.tax ? product.tax.taxRate : 0 %}
+		{% set fields = page.extensions.hmnetConfiguratorFields|default([]) %}
+		{% set setupLabelTemplate = 'hmnet-configurator.breakdown.setupLabel'|trans|sw_sanitize %}
+		{% set filmLabelTemplate = 'hmnet-configurator.breakdown.filmLabel'|trans|sw_sanitize %}
+		{% set defaultSelectLabel = 'hmnet-configurator.select.defaultLabel'|trans %}
+
+		{% sw_include '@HMnetConfigurator/storefront/configurator/partials/container.html.twig' with {
+			product: product,
+			fields: fields,
+			currencyDecimals: currencyDecimals,
+			currencySymbol: context.currency.symbol,
+			taxRate: taxRate,
+			setupLabelTemplate: setupLabelTemplate,
+			filmLabelTemplate: filmLabelTemplate,
+			defaultSelectLabel: defaultSelectLabel
+		} only %}
 	{% endif %}
 {% endblock %}

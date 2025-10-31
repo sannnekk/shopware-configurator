@@ -45,6 +45,7 @@ When a customer adds the same product with different option combinations, the pl
 - Storefront assets live in `src/Resources/app/storefront`. Use the Shopware build tooling (for example `bin/build-storefront.sh` or the standard administration build process) after modifying the JavaScript or SCSS sources.
 - Cart behaviour is implemented through custom collector, processor, and a `BeforeLineItemAddedEvent` subscriber inside `src/Core/Checkout/Cart/`.
 - Tests are located in the `tests/` directory and can be executed with the project-wide PHPUnit configuration.
+- The prices are calculated in two places: in the storefront using js in the configurator, and in the backend using PHP. Ensure that both implementations stay in sync when modifying the pricing logic.
 
 For questions or contributions, open an issue or submit a pull request in the repository.
 

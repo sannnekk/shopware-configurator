@@ -1,0 +1,20 @@
+{% if children and children|length > 0 %}
+	{% block hmnet_product_configurator_line_item_option_list %}
+		<ul class="hmnet-configurator-children__list">
+			{% for child in children %}
+				<li class="hmnet-configurator-children__item">
+					<span class="hmnet-configurator-children__name">{{ child.label|sw_sanitize }}</span>
+					<span class="hmnet-configurator-children__unit-price">
+						{{ child.price.unitPrice|currency(currencyIso) }}
+					</span>
+					<span class="hmnet-configurator-children__quantity">×{{ child.quantity }}</span>
+					{% if child.price %}
+						<span class="hmnet-configurator-children__price">
+							{{ child.price.totalPrice|currency(currencyIso) }}
+						</span>
+					{% endif %}
+				</li>
+			{% endfor %}
+		</ul>
+	{% endblock %}
+{% endif %}

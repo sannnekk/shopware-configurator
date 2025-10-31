@@ -1,0 +1,11 @@
+<div class="hmnet-product-configurator__fields">
+	{% for field in fields %}
+		{% if field.isVisible %}
+			{% sw_include '@HMnetConfigurator/storefront/configurator/partials/field.html.twig' with {
+				field: field,
+				currencySymbol: currencySymbol,
+				defaultSelectLabel: defaultSelectLabel
+			} only %}
+		{% endif %}
+	{% endfor %}
+</div>
