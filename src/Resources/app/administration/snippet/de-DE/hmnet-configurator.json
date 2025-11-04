@@ -24,8 +24,6 @@
 				"name": "Name",
 				"isRequired": "Vorauswahl",
 				"isVisible": "Sichtbarkeit",
-				"setupPrice": "Einrichtungspreis",
-				"filmPrice": "Filmpreis",
 				"options": "Optionen",
 				"prices": "Preise"
 			},
@@ -34,7 +32,9 @@
 				"inputPlaceholder": "z.B. Siebdruck, Digitaldruck, ...",
 				"noOptions": "Noch keine Optionen vorhanden",
 				"removeOption": "Option löschen",
-				"addOption": "Option hinzufügen"
+				"addOption": "Option hinzufügen",
+				"setupPriceLabel": "Einrichtungspreis",
+				"filmPriceLabel": "Filmpreis"
 			},
 			"possibility": {
 				"noPossibilities": "Noch keine Varianten vorhanden",

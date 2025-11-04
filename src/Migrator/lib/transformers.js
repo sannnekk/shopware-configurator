@@ -240,14 +240,14 @@ export function createTransformers({
 	identityMap,
 	productMap,
 	priceTierIndex,
-	fieldCostIndex,
+	optionCostIndex,
 	logger,
 	availableLanguages,
 }) {
 	const languageMap = new Map()
 	const productIndex = productMap ?? new Map()
 	const priceTierGroups = priceTierIndex ?? new Map()
-	const fieldCostGroups = fieldCostIndex ?? new Map()
+	const optionCostGroups = optionCostIndex ?? new Map()
 	const missingProductNumbers = new Set()
 	const missingFieldRefs = new Set()
 	const missingOptionRefs = new Set()
@@ -368,14 +368,6 @@ export function createTransformers({
 					generateUuidBuffer
 				)
 
-				const fieldCosts = fieldCostGroups.get(String(row.id)) ?? null
-				const setupPrice =
-					fieldCosts?.setup ??
-					normalizeNumber(pickFirstDefined(row, ['setup_price', 'setupPrice']))
-				const filmPrice =
-					fieldCosts?.film ??
-					normalizeNumber(pickFirstDefined(row, ['film_price', 'filmPrice']))
-
 				rows.push({
 					id: newId,
 					product_id: productId,
@@ -395,8 +387,6 @@ export function createTransformers({
 						pickFirstDefined(row, ['is_visible', 'isVisible', 'visible']),
 						1
 					),
-					setup_price: setupPrice,
-					film_price: filmPrice,
 					created_at: createdAt,
 					updated_at: updatedAt,
 				})
@@ -455,12 +445,36 @@ export function createTransformers({
 					generateUuidBuffer
 				)
 
+				const optionCosts = optionCostGroups.get(String(row.id)) ?? null
+				const setupPrice =
+					optionCosts?.setupPerColor ??
+					normalizeNumber(
+						pickFirstDefined(row, [
+							'setup_costs_per_color',
+							'setupCostsPerColor',
+							'setup_costs_once',
+							'setupCostsOnce',
+						])
+					)
+				const filmPrice =
+					optionCosts?.filmPerColor ??
+					normalizeNumber(
+						pickFirstDefined(row, [
+							'film_costs_per_color',
+							'filmCostsPerColor',
+							'film_costs_once',
+							'filmCostsOnce',
+						])
+					)
+
 				rows.push({
 					id: newId,
 					field_id: mappedFieldId,
 					position: normalizeNumber(
 						pickFirstDefined(row, ['position', 'sort', 'sort_order'])
 					),
+					setup_price: setupPrice,
+					film_price: filmPrice,
 					price_tiers: serializePriceTiers(
 						priceTierGroups.get(String(row.id)) ?? [],
 						logger,

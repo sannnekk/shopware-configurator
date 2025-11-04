@@ -1,4 +1,4 @@
-<div class="hmnet-product-configurator__field" data-hmnet-field data-field-id="{{ field.id }}" data-setup-price="{{ field.setupPrice|default(0) }}" data-film-price="{{ field.filmPrice|default(0) }}" data-options='{{ field.options|json_encode|e('html_attr') }}'>
+<div class="hmnet-product-configurator__field" data-hmnet-field data-field-id="{{ field.id }}" data-options='{{ field.options|json_encode|e('html_attr') }}'>
 	<div class="hmnet-product-configurator__field__head">
 		<label class="hmnet-product-configurator__field__label" for="hmnet-configurator-field-{{ field.id }}">
 			{{ field.translated.name }}
@@ -11,7 +11,7 @@
 			{% endif %}
 			{% for option in field.options %}
 				{% for possibility in option.possibilities %}
-					<option value="{{ possibility.id }}">
+					<option value="{{ possibility.id }}" data-setup-price="{{ option.setupPrice|default(0) }}" data-film-price="{{ option.filmPrice|default(0) }}">
 						{{ option.translated.name|default(option.name) }}
 						{{ possibility.translated.name|default(possibility.name) }}
 					</option>

@@ -220,9 +220,19 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	 */
 	getDataForField(fieldId, quantity) {
 		const defaultReturn = [0, null, [], []]
-		const field = document.querySelector(
+		const field = this.el.querySelector(
 			`[data-hmnet-field][data-field-id="${fieldId}"]`
 		)
+		const chosenOptionEl = field.querySelector(`[data-hmnet-field-select]`)
+
+		const setupPrice =
+			parseFloat(
+				chosenOptionEl.options[chosenOptionEl.selectedIndex].dataset.setupPrice
+			) || 0
+		const filmPrice =
+			parseFloat(
+				chosenOptionEl.options[chosenOptionEl.selectedIndex].dataset.filmPrice
+			) || 0
 
 		if (!field) {
 			return defaultReturn
@@ -232,8 +242,6 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			'[data-hmnet-field-select]'
 		).value
 
-		const setupPrice = parseFloat(field.dataset.setupPrice) || 0
-		const filmPrice = parseFloat(field.dataset.filmPrice) || 0
 		const options = Object.values(JSON.parse(field.dataset.options || '[]'))
 
 		if (!chosenPossibilityId) {

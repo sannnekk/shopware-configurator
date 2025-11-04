@@ -29,7 +29,7 @@ export class ConfiguratorMigrator {
 		this.identityMap = new IdentityMap()
 		this.productMap = new Map()
 		this.priceTierIndex = new Map()
-		this.fieldCostIndex = new Map()
+		this.optionCostIndex = new Map()
 		this.availableLanguageIds = new Set()
 		this.transformers = null
 
@@ -119,18 +119,18 @@ export class ConfiguratorMigrator {
 			const productCount = await this.buildProductMap()
 			const languageCount = await this.buildLanguageSet()
 			const priceTierCount = await this.buildPriceTierIndex()
-			const fieldCostCount = await this.buildFieldCostIndex()
+			const optionCostCount = await this.buildOptionCostIndex()
 			this.transformers = createTransformers({
 				config: this.config,
 				identityMap: this.identityMap,
 				productMap: this.productMap,
 				priceTierIndex: this.priceTierIndex,
-				fieldCostIndex: this.fieldCostIndex,
+				optionCostIndex: this.optionCostIndex,
 				logger: this.logger,
 				availableLanguages: this.availableLanguageIds,
 			})
 			stage.succeed(
-				`${productCount} product(s) mapped, ${languageCount} language(s) detected, ${priceTierCount} price tier group(s) prepared, ${fieldCostCount} field cost group(s) prepared`
+				`${productCount} product(s) mapped, ${languageCount} language(s) detected, ${priceTierCount} price tier group(s) prepared, ${optionCostCount} option cost group(s) prepared`
 			)
 		} catch (error) {
 			stage.fail('Unable to load supporting data')
@@ -359,52 +359,58 @@ export class ConfiguratorMigrator {
 		return this.priceTierIndex.size
 	}
 
-	async buildFieldCostIndex() {
+	async buildOptionCostIndex() {
 		const [rows] = await this.legacyPool.query(
 			`SELECT 
+				m.id,
 				m.print_position_id,
 				m.setup_costs_per_color,
-				m.film_costs_per_color
+				m.setup_costs_once,
+				m.film_costs_per_color,
+				m.film_costs_once
 			FROM ott_printconfig_print_methods m`
 		)
 
-		this.fieldCostIndex.clear()
+		this.optionCostIndex.clear()
 
 		for (const row of rows) {
-			const positionId = row.print_position_id ?? row.printPositionId
+			const methodId =
+				row.id ??
+				row.print_method_id ??
+				row.printMethodId ??
+				row.method_id ??
+				row.methodId ??
+				row.print_position_method_id ??
+				row.printPositionMethodId
 
-			if (positionId === undefined || positionId === null) {
+			if (methodId === undefined || methodId === null) {
 				continue
 			}
 
-			const current = this.fieldCostIndex.get(String(positionId)) ?? {
-				setup: null,
-				film: null,
-			}
+			const setupPerColorRaw =
+				row.setup_costs_per_color ??
+				row.setupCostsPerColor ??
+				row.setup_per_color
+			const setupOnceRaw =
+				row.setup_costs_once ?? row.setupCostsOnce ?? row.setup_once
+			const filmPerColorRaw =
+				row.film_costs_per_color ?? row.filmCostsPerColor ?? row.film_per_color
+			const filmOnceRaw =
+				row.film_costs_once ?? row.filmCostsOnce ?? row.film_once
 
-			const setupValue = Number.isFinite(Number(row.setup_costs_per_color))
-				? Number(row.setup_costs_per_color)
-				: null
-			const filmValue = Number.isFinite(Number(row.film_costs_per_color))
-				? Number(row.film_costs_per_color)
-				: null
+			const normalize = (value) =>
+				Number.isFinite(Number(value)) ? Number(value) : null
 
-			if (setupValue !== null) {
-				current.setup =
-					current.setup === null
-						? setupValue
-						: Math.max(current.setup, setupValue)
-			}
-
-			if (filmValue !== null) {
-				current.film =
-					current.film === null ? filmValue : Math.max(current.film, filmValue)
-			}
-
-			this.fieldCostIndex.set(String(positionId), current)
+			this.optionCostIndex.set(String(methodId), {
+				fieldId: row.print_position_id ?? row.printPositionId ?? null,
+				setupPerColor: normalize(setupPerColorRaw),
+				setupOnce: normalize(setupOnceRaw),
+				filmPerColor: normalize(filmPerColorRaw),
+				filmOnce: normalize(filmOnceRaw),
+			})
 		}
 
-		return this.fieldCostIndex.size
+		return this.optionCostIndex.size
 	}
 
 	async writeRows(table, rows = []) {

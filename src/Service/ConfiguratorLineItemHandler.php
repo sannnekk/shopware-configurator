@@ -26,6 +26,8 @@ class ConfiguratorLineItemHandler implements LineItemFactoryInterface
 		$fieldEntity = $data['fieldEntity'] ?? null;
 		$possibilityId = $data['possibilityId'] ?? null;
 
+		[$setupPrice, $filmPrice] = $this->getSetupAndFilmPrice($fieldEntity, $possibilityId);
+
 		$lineItem->setLabel($this->getLabel($fieldEntity, $possibilityId));
 		$lineItem->setStackable(true);
 		$lineItem->setRemovable(false);
@@ -33,8 +35,8 @@ class ConfiguratorLineItemHandler implements LineItemFactoryInterface
 		$lineItem->setPayload([
 			"priceTiers" => $this->getPriceTiers($fieldEntity, $possibilityId),
 			"multiplicator" => $this->getMultiplicator($fieldEntity, $possibilityId),
-			"setupPrice" => $fieldEntity->setupPrice ?? 0.0,
-			"filmPrice" => $fieldEntity->filmPrice ?? 0.0
+			"setupPrice" => $setupPrice,
+			"filmPrice" => $filmPrice
 		]);
 
 		return $lineItem;
@@ -68,5 +70,15 @@ class ConfiguratorLineItemHandler implements LineItemFactoryInterface
 		[, $possibility] = FieldUtils::getOptionAndPossibility($fieldEntity, $possibilityId);
 
 		return $possibility?->multiplicator ?? 1.0;
+	}
+
+	private function getSetupAndFilmPrice(Entity $fieldEntity, string $possibilityId): array
+	{
+		[$option,] = FieldUtils::getOptionAndPossibility($fieldEntity, $possibilityId);
+
+		return [
+			$option?->setupPrice ?? 0.0,
+			$option?->filmPrice ?? 0.0
+		];
 	}
 }

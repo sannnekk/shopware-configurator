@@ -1,6 +1,8 @@
 <div class="hmnet-configurator-option-container">
 	<div class="hmnet-configurator-option-container__label">
 		<hmnet-editable-field v-model="optionModel.name" :label="$tc('hmnet-configurator.table.option.inputLabel')" :placeholder="$tc('hmnet-configurator.table.option.inputPlaceholder')" size="small" :is-editable="isEditable" type="text"/>
+		<hmnet-editable-field v-model="optionModel.setupPrice" :label="$tc('hmnet-configurator.table.option.setupPriceLabel')" size="small" :is-editable="isEditable" type="price"/>
+		<hmnet-editable-field v-model="optionModel.filmPrice" :label="$tc('hmnet-configurator.table.option.filmPriceLabel')" size="small" :is-editable="isEditable" type="price"/>
 		<div class="hmnet-configurator-option-container__label__actions" v-if="isEditable">
 			<mt-button variant="critical" size="x-small" @click="onRemoveOption">
 				{{ $tc('hmnet-configurator.table.option.removeOption') }}

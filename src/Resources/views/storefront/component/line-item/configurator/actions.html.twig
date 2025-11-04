@@ -1,10 +1,13 @@
+{% set quantityFormAction = path('frontend.checkout.line-item.change-quantity', { id: parentLineItem.id }) %}
+{% set removeFormAction = path('frontend.checkout.line-item.delete', { id: parentLineItem.id }) %}
+
 <div class="hmnet-configurator-children__quantity-input">
 	{% sw_include '@Storefront/storefront/component/line-item/element/quantity.html.twig' with {
 		lineItem: parentLineItem,
 		displayMode: 'default',
 		showQuantitySelect: true,
 		redirectTo: redirectTo,
-		formAction: formAction
+		formAction: quantityFormAction
 	} only %}
 </div>
 <div class="hmnet-configurator-children__total-price">
@@ -28,7 +31,7 @@
 				lineItem: parentLineItem,
 				redirectTo: redirectTo,
 				redirectParameters: redirectParameters,
-				formAction: formAction,
+				formAction: removeFormAction,
 				displayMode: displayMode,
 				label: parentLineItem.label
 			} only %}

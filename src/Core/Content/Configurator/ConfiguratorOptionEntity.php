@@ -34,6 +34,12 @@ class ConfiguratorOptionEntity extends Entity
 	#[Field(type: FieldType::INT, api: true)]
 	public ?int $position = null;
 
+	#[Field(type: FieldType::FLOAT, api: true)]
+	public ?float $setupPrice = null;
+
+	#[Field(type: FieldType::FLOAT, api: true)]
+	public ?float $filmPrice = null;
+
 	/**
 	 * @var array<string, ConfiguratorOptionPossibilityEntity>|null
 	 */
