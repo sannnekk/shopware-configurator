@@ -39,14 +39,13 @@ class SetupFilmLineItemHandler implements LineItemFactoryInterface
 
 		$lineItem = new LineItem($referencedId, self::TYPE, null, 1);
 
-
 		$lineItem->setLabel($this->getLabel($type));
 		$lineItem->setStackable(true);
 		$lineItem->setRemovable(false);
 		$lineItem->setPayload([
 			"positions" => array_map(fn(LineItem $item) => [
 				"label" => $item->getLabel(),
-				"price" => $item->getPayloadValue($type === 'setup' ? 'setupPrice' : 'filmPrice') ?? 0.0,
+				"price" => ($item->getPayloadValue($type === 'setup' ? 'setupPrice' : 'filmPrice') ?? 0.0) * ($item->getPayloadValue('multiplicator') ?? 1.0),
 			], $lineItems),
 		]);
 

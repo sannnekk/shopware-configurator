@@ -193,7 +193,7 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			productUnitPriceNet,
 			this.currencyDecimals
 		)
-		this.setNumber(productQuantityEl, quantity, 0)
+		this.setNumber(productQuantityEl, quantity, 0, '', '')
 		this.setNumber(
 			productTotalPriceEl,
 			productWholePriceNet,
@@ -395,14 +395,14 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		const totalPriceEl = fieldEl.querySelector('[data-hmnet-field-unit-total]')
 
 		this.setNumber(unitPriceEl, unitPrice, this.currencyDecimals)
-		this.setNumber(quantityEl, quantity, 0)
+		this.setNumber(quantityEl, quantity, 0, '', '')
 		this.setNumber(totalPriceEl, totalPrice, this.currencyDecimals)
 	}
 
 	/**
 	 * @param {number} price
 	 */
-	setNumber(htmlEl, price, decimals = 2) {
+	setNumber(htmlEl, price, decimals = 2, separator = '.', decimal = ',') {
 		const prevValue = parseFloat(htmlEl.dataset.counterPrevValue || '0')
 
 		const countUp = new CountUp(htmlEl, price, {
@@ -410,8 +410,8 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			startVal: prevValue,
 			duration: 0.8,
 			decimalPlaces: decimals,
-			separator: '.',
-			decimal: ',',
+			separator,
+			decimal,
 		})
 		countUp.start()
 

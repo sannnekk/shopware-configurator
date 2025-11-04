@@ -63,7 +63,7 @@ class FieldUtils
 		foreach ($lineItems as $lineItem) {
 			$payload = $lineItem->getPayload();
 
-			if (isset($payload['setupPrice']) && $payload['filmPrice'] > 0) {
+			if (isset($payload['setupPrice']) && $payload['setupPrice'] > 0) {
 				$lineItemsWithSetupPrice[] = $lineItem;
 			}
 

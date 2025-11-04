@@ -189,13 +189,13 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 			$additionalTotal = 0.0;
 			$additionalTaxes = new CalculatedTaxCollection([]);
 
-			if ($setupPriceLineItem && $setupPriceLineItem->getPrice() && $setupPriceLineItem->getPrice()->getTotalPrice() > 0.0) {
+			if ($setupPriceLineItem && $setupPriceLineItem->getPrice()) {
 				$lineItem->addChild($setupPriceLineItem);
 				$additionalTotal += $setupPriceLineItem->getPrice()->getTotalPrice();
 				PriceUtils::mergeTaxes($additionalTaxes, $setupPriceLineItem->getPrice()->getCalculatedTaxes());
 			}
 
-			if ($filmPriceLineItem && $filmPriceLineItem->getPrice() && $filmPriceLineItem->getPrice()->getTotalPrice() > 0.0) {
+			if ($filmPriceLineItem && $filmPriceLineItem->getPrice()) {
 				$lineItem->addChild($filmPriceLineItem);
 				$additionalTotal += $filmPriceLineItem->getPrice()->getTotalPrice();
 				PriceUtils::mergeTaxes($additionalTaxes, $filmPriceLineItem->getPrice()->getCalculatedTaxes());
