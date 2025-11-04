@@ -86,6 +86,12 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	 * @return {void}
 	 */
 	calculate() {
+		/**
+		 * @type {{ quantityStart: number, quantityEnd: number|null, price: number }[]}
+		 */
+		this.productPrices =
+			Object.values(JSON.parse(this.el.dataset.productPrices || '{}')) ?? []
+		console.log('Product Prices:', this.productPrices)
 		this.taxRate = parseFloat(this.el.dataset.taxRate)
 		this.currencyDecimals = parseInt(this.el.dataset.currencyDecimals) || 2
 		this.currencySymbol = this.el.dataset.currencySymbol || ''
@@ -134,8 +140,18 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			}
 		}
 
+		const productWholePriceNet =
+			this.getProductPrice(this.productPrices, quantity) * quantity
+
+		wholePriceNet += productWholePriceNet
+
 		const [wholePriceGross, wholeTax] = this.getGrossFromNet(wholePriceNet)
 
+		this.setProductPriceElements(
+			productWholePriceNet,
+			this.productPrices,
+			quantity
+		)
 		this.setFilmAndSetupOptions(additionalOptions)
 		this.setChosenOptionsInCartData(chosenPossibilityIds)
 		this.setWholePriceElements(wholePriceNet, wholePriceGross, wholeTax)
@@ -151,6 +167,38 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			.filter((opt) => opt.price > 0)
 			.map((opt) => this.getOptionTemplate(opt.label, opt.price))
 			.join('')
+	}
+
+	/**
+	 * Set product price elements
+	 * @param {number} productWholePriceNet
+	 * @param {{ quantityStart: number, quantityEnd: number|null, price: number }[]} productPrices
+	 * @param {number} quantity
+	 */
+	setProductPriceElements(productWholePriceNet, productPrices, quantity) {
+		const productUnitPriceNet = this.getProductPrice(productPrices, quantity)
+
+		const productUnitPriceEl = this.el.querySelector(
+			'[data-hmnet-product-unit-price]'
+		)
+		const productQuantityEl = this.el.querySelector(
+			'[data-hmnet-product-quantity]'
+		)
+		const productTotalPriceEl = this.el.querySelector(
+			'[data-hmnet-product-total]'
+		)
+
+		this.setNumber(
+			productUnitPriceEl,
+			productUnitPriceNet,
+			this.currencyDecimals
+		)
+		this.setNumber(productQuantityEl, quantity, 0)
+		this.setNumber(
+			productTotalPriceEl,
+			productWholePriceNet,
+			this.currencyDecimals
+		)
 	}
 
 	/**
@@ -283,6 +331,27 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		)
 
 		return [grossPrice, grossPrice - netPrice]
+	}
+
+	/**
+	 * Calculates product price based on quantity and productPrices tiers
+	 *
+	 * @param {{ quantityStart: number, quantityEnd: number|null, price: number }[]} productPrices
+	 * @param {number} quantity
+	 * @returns {number}
+	 */
+	getProductPrice(productPrices, quantity) {
+		const tier = productPrices.find(
+			(t) =>
+				t.quantityStart <= quantity &&
+				(t.quantityEnd === null || t.quantityEnd >= quantity)
+		)
+
+		if (!tier) {
+			return 0
+		}
+
+		return tier.price
 	}
 
 	/**

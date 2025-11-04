@@ -1,4 +1,18 @@
 <div class="hmnet-product-configurator__fields">
+	<div class="hmnet-product-configurator__field hmnet-product-configurator__field--product">
+		<div></div>
+		<div class="hmnet-product-configurator__field__item-price">
+			<span class="odometer value" data-hmnet-product-unit-price>0,00</span>
+			<span class="currency">{{ currencySymbol }}</span>
+		</div>
+		<div class="hmnet-product-configurator__field__amount">
+			<span class="odometer value" data-hmnet-product-quantity>0</span>
+		</div>
+		<div class="hmnet-product-configurator__field__item-total">
+			<span class="odometer value" data-hmnet-product-total>0,00</span>
+			<span class="currency">{{ currencySymbol }}</span>
+		</div>
+	</div>
 	{% for field in fields %}
 		{% if field.isVisible %}
 			{% sw_include '@HMnetConfigurator/storefront/configurator/partials/field.html.twig' with {
