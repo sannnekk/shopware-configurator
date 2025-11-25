@@ -372,7 +372,7 @@ export function createTransformers({
 					id: newId,
 					product_id: productId,
 					position: normalizeNumber(
-						pickFirstDefined(row, ['position', 'sort', 'sort_order'])
+						pickFirstDefined(row, ['sort', 'position', 'sort_order'])
 					),
 					is_required: normalizeBoolean(
 						pickFirstDefined(row, [
@@ -471,7 +471,7 @@ export function createTransformers({
 					id: newId,
 					field_id: mappedFieldId,
 					position: normalizeNumber(
-						pickFirstDefined(row, ['position', 'sort', 'sort_order'])
+						pickFirstDefined(row, ['sort', 'position', 'sort_order'])
 					),
 					setup_price: setupPrice,
 					film_price: filmPrice,
@@ -543,7 +543,7 @@ export function createTransformers({
 					option_id: mappedOptionId,
 					position:
 						normalizeNumber(
-							pickFirstDefined(row, ['position', 'sort', 'sort_order']),
+							pickFirstDefined(row, ['sort', 'position', 'sort_order']),
 							0
 						) ?? 0,
 					multiplicator:
@@ -574,11 +574,18 @@ export function createTransformers({
 
 	function fallbackTransformer(sourceRows, targetTable) {
 		return {
-			primary: sourceRows.map((row) => ({
-				...row,
-				created_at: row.created_at ?? defaultCreatedAt,
-				updated_at: row.updated_at ?? null,
-			})),
+			primary: sourceRows.map((row) => {
+				const mappedRow = { ...row }
+				if ('sort' in mappedRow && !('position' in mappedRow)) {
+					mappedRow.position = normalizeNumber(mappedRow.sort)
+					delete mappedRow.sort
+				}
+				return {
+					...mappedRow,
+					created_at: mappedRow.created_at ?? defaultCreatedAt,
+					updated_at: mappedRow.updated_at ?? null,
+				}
+			}),
 			related: buildTranslationRows({
 				targetTable,
 				sourceRows,

@@ -9,8 +9,8 @@
 					{{ defaultSelectLabel|sw_sanitize }}
 				</option>
 			{% endif %}
-			{% for option in field.options %}
-				{% for possibility in option.possibilities %}
+			{% for option in field.options|sort((a, b) => a.position - b.position) %}
+				{% for possibility in option.possibilities|sort((a, b) => a.position - b.position) %}
 					<option value="{{ possibility.id }}" data-setup-price="{{ option.setupPrice|default(0) }}" data-film-price="{{ option.filmPrice|default(0) }}">
 						{{ option.translated.name|default(option.name) }}
 						{{ possibility.translated.name|default(possibility.name) }}
@@ -20,14 +20,14 @@
 		</select>
 	</div>
 	<div class="hmnet-product-configurator__field__item-price">
-		<span class="odometer value" data-hmnet-field-unit-price>0,00</span>
+		<span class="odometer value" data-hmnet-uid="item-price-{{ field.id }}" data-hmnet-field-unit-price>0,00</span>
 		<span class="currency">{{ currencySymbol }}</span>
 	</div>
 	<div class="hmnet-product-configurator__field__amount">
-		<span class="odometer value" data-hmnet-field-amount>0</span>
+		<span class="odometer value" data-hmnet-uid="amount-{{ field.id }}" data-hmnet-field-amount>0</span>
 	</div>
 	<div class="hmnet-product-configurator__field__item-total">
-		<span class="odometer value" data-hmnet-field-unit-total>0,00</span>
+		<span class="odometer value" data-hmnet-uid="item-total-{{ field.id }}" data-hmnet-field-unit-total>0,00</span>
 		<span class="currency">{{ currencySymbol }}</span>
 	</div>
 </div>

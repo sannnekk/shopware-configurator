@@ -33,40 +33,45 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	}
 
 	init() {
+		this.debouncedCalculate = this.debounce(this.calculate.bind(this), 800)
 		this.registerEvents()
 		this.calculate()
 	}
 
 	registerEvents() {
-		const thisPointer = this
-
 		document
 			.querySelector('[data-quantity-selector] input')
-			?.addEventListener('change', thisPointer.calculate.bind(thisPointer))
+			?.addEventListener('change', this.debouncedCalculate.bind(this))
 		document
 			.querySelector('[data-quantity-selector] input')
-			?.addEventListener('input', thisPointer.calculate.bind(thisPointer))
+			?.addEventListener('input', this.debouncedCalculate.bind(this))
 
 		document
 			.querySelector('[data-quantity-selector] .js-button-minus')
-			?.addEventListener('click', () => {
-				setTimeout(() => thisPointer.calculate.bind(thisPointer), 50)
-			})
+			?.addEventListener('click', this.debouncedCalculate.bind(this))
 
 		document
 			.querySelector('[data-quantity-selector] .js-button-plus')
-			?.addEventListener('click', () => {
-				setTimeout(() => thisPointer.calculate.bind(thisPointer), 50)
-			})
+			?.addEventListener('click', this.debouncedCalculate.bind(this))
 
 		document
 			.querySelectorAll('[data-hmnet-field-select]')
 			.forEach((selectEl) =>
-				selectEl.addEventListener(
-					'change',
-					thisPointer.calculate.bind(thisPointer)
-				)
+				selectEl.addEventListener('change', this.debouncedCalculate.bind(this))
 			)
+	}
+
+	/**
+	 * @param {Function} func
+	 * @param {number} delay
+	 * @returns {Function}
+	 */
+	debounce(func, delay) {
+		let timeoutId
+		return function (...args) {
+			clearTimeout(timeoutId)
+			timeoutId = setTimeout(() => func.apply(this, args), delay)
+		}
 	}
 
 	/**
@@ -91,7 +96,6 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		 */
 		this.productPrices =
 			Object.values(JSON.parse(this.el.dataset.productPrices || '{}')) ?? []
-		console.log('Product Prices:', this.productPrices)
 		this.taxRate = parseFloat(this.el.dataset.taxRate)
 		this.currencyDecimals = parseInt(this.el.dataset.currencyDecimals) || 2
 		this.currencySymbol = this.el.dataset.currencySymbol || ''
@@ -408,12 +412,21 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	}
 
 	/**
+	 * @param {HTMLElement} htmlEl
 	 * @param {number} price
+	 * @param {number} decimals
+	 * @param {string} separator
+	 * @param {string} decimal
 	 */
 	setNumber(htmlEl, price, decimals = 2, separator = '.', decimal = ',') {
 		const prevValue = parseFloat(htmlEl.dataset.counterPrevValue || '0')
+		const elementUid = htmlEl.dataset.hmnetUid ?? '-'
 
-		const countUp = new CountUp(htmlEl, price, {
+		if (!window.countup) {
+			window.countup = {}
+		}
+
+		window.countup[elementUid] = new CountUp(htmlEl, price, {
 			plugin: new Odometer({ duration: 0.8, lastDigitDelay: 0 }),
 			startVal: prevValue,
 			duration: 0.8,
@@ -421,9 +434,8 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			separator,
 			decimal,
 		})
-		countUp.start()
-
 		htmlEl.dataset.counterPrevValue = price
+		window.countup[elementUid].start()
 	}
 
 	/**
