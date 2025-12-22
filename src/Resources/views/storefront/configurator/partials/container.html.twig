@@ -11,7 +11,10 @@
 
 	{% sw_include '@HMnetConfigurator/storefront/configurator/partials/breakdown.html.twig' only %}
 
-	{% sw_include '@HMnetConfigurator/storefront/configurator/partials/totals.html.twig' with {
-		currencySymbol: currencySymbol
-	} only %}
+	<div class="hmnet-product-configurator-bottom-row">
+		{% sw_include '@Storefront/storefront/component/buy-widget/buy-widget-price.html.twig' %}
+		{% sw_include '@HMnetConfigurator/storefront/configurator/partials/totals.html.twig' with {
+			currencySymbol: currencySymbol
+		} only %}
+	</div>
 </div>

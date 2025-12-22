@@ -114,7 +114,7 @@
 
 	&__total {
 		display: grid;
-		gap: 1rem;
+		gap: 0.6rem;
 		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
 		padding: 1rem;
 		background: var(--bs-gray-100);
@@ -141,12 +141,35 @@
 
 		&__tax,
 		&__gross {
-			text-align: right;
+			//text-align: right;
 
 			.value,
 			.currency {
 				font-size: 1rem;
 				font-weight: normal;
+			}
+		}
+	}
+
+	.hmnet-product-configurator-bottom-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: stretch;
+		gap: 1rem;
+		margin-top: 1rem;
+
+		> * {
+			flex: 1;
+		}
+
+		.product-block-prices-grid {
+			.product-block-prices-cell {
+				padding: 5px;
+			}
+
+			td,
+			th {
+				color: map-get($theme-colors, 'secondary');
 			}
 		}
 	}
@@ -351,4 +374,22 @@
 
 .line-item-details {
 	width: unset !important;
+}
+
+.product-detail-tax {
+	margin-bottom: 0;
+	font-size: 0.8rem;
+
+	button {
+		color: map-get($theme-colors, 'secondary');
+	}
+}
+
+.hmnet-action-button {
+	flex: 1;
+
+	@media (max-width: 768px) {
+		width: 100%;
+		flex: unset;
+	}
 }

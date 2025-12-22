@@ -1,7 +1,5 @@
 {% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget.html.twig' %}
 
 {% block buy_widget_price %}
-	{{ parent() }}
-
 	{% sw_include '@HMnetConfigurator/storefront/configurator/hmnet-product-configurator.html.twig' %}
 {% endblock %}

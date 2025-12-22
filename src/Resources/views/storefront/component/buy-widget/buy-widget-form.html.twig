@@ -10,3 +10,25 @@
 		value="[]"
 	/>
 {% endblock %}
+
+{% block buy_widget_buy_button_container %}
+	{{ parent() }}
+
+	<div class="hmnet-product-actions mt-2 d-flex gap-2 flex-wrap">
+		<button class="hmnet-action-button btn btn-secondary"
+			type="button"
+			data-hmnet-configurator-pdf-download>
+			{{ 'HMnetConfigurator.BuyWidget.DownloadPdf'|trans }}
+		</button>
+		<button class="hmnet-action-button btn btn-secondary"
+			type="button"
+			data-hmnet-configurator-pdf-download>
+			{{ 'HMnetConfigurator.BuyWidget.ProductQuestion'|trans }}
+		</button>
+		<button class="hmnet-action-button btn btn-secondary"
+			type="button"
+			data-hmnet-configurator-pdf-download>
+			{{ 'HMnetConfigurator.BuyWidget.FreeItem'|trans }}
+		</button>
+	</div>
+{% endblock %}
