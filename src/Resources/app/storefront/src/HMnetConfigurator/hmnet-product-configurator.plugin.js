@@ -33,9 +33,13 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	}
 
 	init() {
-		this.debouncedCalculate = this.debounce(this.calculate.bind(this), 800)
+		this.loaderEl = this.el.querySelector('[data-hmnet-configurator-loader]')
+		this.debouncedCalculate = this.debounce(
+			this.calculateWithLoading.bind(this),
+			800
+		)
 		this.registerEvents()
-		this.calculate()
+		this.calculateWithLoading()
 	}
 
 	registerEvents() {
@@ -69,6 +73,7 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	debounce(func, delay) {
 		let timeoutId
 		return function (...args) {
+			this.setLoading(true)
 			clearTimeout(timeoutId)
 			timeoutId = setTimeout(() => func.apply(this, args), delay)
 		}
@@ -159,6 +164,15 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		this.setFilmAndSetupOptions(additionalOptions)
 		this.setChosenOptionsInCartData(chosenPossibilityIds)
 		this.setWholePriceElements(wholePriceNet, wholePriceGross, wholeTax)
+	}
+
+	calculateWithLoading() {
+		this.setLoading(true)
+		try {
+			this.calculate()
+		} finally {
+			this.setLoading(false)
+		}
 	}
 
 	/**
@@ -385,6 +399,22 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		this.setNumber(netPriceEl, netPrice, this.currencyDecimals)
 		this.setNumber(grossPriceEl, grossPrice, this.currencyDecimals)
 		this.setNumber(taxAmountEl, taxAmount, this.currencyDecimals)
+	}
+
+	setLoading(isLoading) {
+		if (!this.el) {
+			return
+		}
+
+		this.el.classList.toggle(
+			'hmnet-product-configurator--calculating',
+			isLoading
+		)
+		this.el.setAttribute('aria-busy', isLoading ? 'true' : 'false')
+
+		if (this.loaderEl) {
+			this.loaderEl.setAttribute('aria-hidden', isLoading ? 'false' : 'true')
+		}
 	}
 
 	/**

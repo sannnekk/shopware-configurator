@@ -17,6 +17,9 @@
       "tax": "zzg. MwSt.",
       "gross": "Preis inkl. MwSt."
     },
+    "status": {
+      "calculating": "Preise werden aktualisiert ..."
+    },
     "cart": {
       "optionsTitle": "Ausgewählte Optionen",
       "setupFilmTitle": "Einrichtungs- & Filmkosten",

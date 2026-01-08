@@ -30,6 +30,39 @@
 		color: var(--bs-gray-700);
 	}
 
+	&__loader {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-height: 1.5rem;
+		color: var(--bs-gray-600);
+		font-size: 0.875rem;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.2s ease, visibility 0.2s ease;
+		grid-column: 1 / -1;
+	}
+
+	&__loader__spinner {
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		border: 2px solid var(--bs-gray-300);
+		border-top-color: var(--bs-secondary);
+		animation: hmnet-configurator-spinner 0.75s linear infinite;
+	}
+
+	&__loader__text {
+		white-space: nowrap;
+	}
+
+	&--calculating {
+		.hmnet-product-configurator__loader {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+
 	&__fields {
 		display: flex;
 		flex-direction: column;
@@ -360,6 +393,16 @@
 		width: unset !important;
 		font-size: 0.875rem;
 		padding: 0 !important;
+	}
+}
+
+@keyframes hmnet-configurator-spinner {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
 	}
 }
 

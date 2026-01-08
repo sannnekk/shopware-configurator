@@ -17,6 +17,9 @@
       "tax": "plus VAT",
       "gross": "Price incl. VAT"
     },
+    "status": {
+      "calculating": "Updating prices ..."
+    },
     "cart": {
       "optionsTitle": "Selected options",
       "setupFilmTitle": "Setup and film costs",
