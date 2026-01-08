@@ -180,11 +180,25 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	 */
 	setFilmAndSetupOptions(options) {
 		const container = this.el.querySelector('[data-hmnet-breakdown-list]')
+		const wrapper = container?.closest('[data-hmnet-breakdown]')
 
-		container.innerHTML = options
-			.filter((opt) => opt.price > 0)
+		const items = options.filter((opt) => opt.price > 0)
+		container.innerHTML = items
 			.map((opt) => this.getOptionTemplate(opt.label, opt.price))
 			.join('')
+
+		const hasItems = items.length > 0
+		if (wrapper) {
+			wrapper.classList.toggle(
+				'hmnet-product-configurator__breakdown--visible',
+				hasItems
+			)
+			wrapper.classList.toggle(
+				'hmnet-product-configurator__breakdown--hidden',
+				!hasItems
+			)
+			wrapper.setAttribute('aria-hidden', hasItems ? 'false' : 'true')
+		}
 	}
 
 	/**
