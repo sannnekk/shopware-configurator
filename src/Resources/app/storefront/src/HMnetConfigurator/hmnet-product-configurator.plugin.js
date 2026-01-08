@@ -63,6 +63,22 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			.forEach((selectEl) =>
 				selectEl.addEventListener('change', this.debouncedCalculate.bind(this))
 			)
+
+		this.registerPdfDownload()
+	}
+
+	registerPdfDownload() {
+		const button = document.querySelector(
+			'[data-hmnet-configurator-pdf-download="quote"]'
+		)
+
+		if (!button) {
+			return
+		}
+
+		button.addEventListener('click', () =>
+			this.handlePdfDownload(button).catch(() => {})
+		)
 	}
 
 	/**
@@ -480,6 +496,67 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		})
 		htmlEl.dataset.counterPrevValue = price
 		window.countup[elementUid].start()
+	}
+
+	async handlePdfDownload(button) {
+		if (button) {
+			button.setAttribute('disabled', 'disabled')
+		}
+
+		try {
+			const payloadInput = document.querySelector(
+				'[data-hmnet-configurator-payload]'
+			)
+			let rawPayload = {}
+			try {
+				rawPayload = JSON.parse(payloadInput?.value || '{}')
+			} catch (e) {
+				rawPayload = {}
+			}
+
+			const requestBody = {
+				productId: this.getProductId(),
+				quantity: this.getQuantity() || 1,
+				payload: rawPayload.hmnetProductConfigurator || {},
+			}
+
+			const response = await fetch(this.el.dataset.pdfEndpoint, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-Token': this.getCsrfToken(),
+				},
+				body: JSON.stringify(requestBody),
+			})
+
+			if (!response.ok) {
+				throw new Error('PDF konnte nicht erstellt werden')
+			}
+
+			const blob = await response.blob()
+			const fileName = 'angebot.pdf'
+			const url = window.URL.createObjectURL(blob)
+			const link = document.createElement('a')
+			link.href = url
+			link.download = fileName
+			document.body.appendChild(link)
+			link.click()
+			link.remove()
+			window.URL.revokeObjectURL(url)
+		} finally {
+			if (button) {
+				button.removeAttribute('disabled')
+			}
+		}
+	}
+
+	getCsrfToken() {
+		const meta = document.querySelector('meta[name="csrf-token"]')
+		return meta?.getAttribute('content') || ''
+	}
+
+	getProductId() {
+		return this.el.dataset.productId || ''
 	}
 
 	/**

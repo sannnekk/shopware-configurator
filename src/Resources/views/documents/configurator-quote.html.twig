@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8" />
+	<title>Angebot</title>
+	<style>
+		body { font-family: Arial, sans-serif; color: #111; margin: 24px; }
+		h1 { font-size: 20px; margin: 0 0 12px 0; }
+		h2 { font-size: 16px; margin: 24px 0 8px 0; }
+		.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 12px; margin-bottom: 20px; }
+		.header__meta { text-align: right; font-size: 12px; line-height: 1.4; }
+		.shop-address { font-size: 12px; line-height: 1.4; }
+		.table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+		.table th, .table td { border: 1px solid #ccc; padding: 8px; font-size: 12px; }
+		.table th { background: #f5f5f5; text-align: left; }
+		.totals { width: 320px; margin-left: auto; margin-top: 20px; font-size: 12px; }
+		.totals td { padding: 6px 8px; }
+		.totals .label { text-align: left; }
+		.totals .value { text-align: right; }
+		.small { font-size: 11px; color: #555; }
+	</style>
+</head>
+<body>
+	<div class="header">
+		<div class="shop-address">
+			{% if shop.logoUrl %}
+				<img src="{{ shop.logoUrl }}" alt="Logo" style="max-height: 50px; margin-bottom: 8px;" />
+			{% endif %}
+			<div><strong>{{ shop.address.name }}</strong></div>
+			<div>{{ shop.address.street }}</div>
+			<div>{{ shop.address.zip }} {{ shop.address.city }}</div>
+			{% if shop.address.email %}<div>{{ shop.address.email }}</div>{% endif %}
+			{% if shop.address.phone %}<div>{{ shop.address.phone }}</div>{% endif %}
+		</div>
+		<div class="header__meta">
+			<div><strong>Angebot</strong></div>
+			<div>Datum: {{ generatedAt|date('d.m.Y H:i') }}</div>
+			<div>Referenz: {{ product.productNumber }}</div>
+			{% if shop.url %}<div>{{ shop.url }}</div>{% endif %}
+		</div>
+	</div>
+
+	<h1>Angebot: {{ product.translated.name|default(product.name) }}</h1>
+	{% if product.translated.metaDescription %}
+		<div class="small">{{ product.translated.metaDescription }}</div>
+	{% endif %}
+
+	<h2>Positionen</h2>
+	<table class="table">
+		<thead>
+			<tr>
+				<th style="width: 40%">Beschreibung</th>
+				<th style="width: 10%">Menge</th>
+				<th style="width: 25%">Einzelpreis (Netto)</th>
+				<th style="width: 25%">Gesamt (Netto)</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{ product.translated.name|default(product.name) }}</td>
+				<td>{{ quantity }}</td>
+				<td>{{ priceData.productUnit|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+				<td>{{ priceData.productTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+			</tr>
+
+			{% for option in priceData.optionLines %}
+				<tr>
+					<td>{{ option.label }}</td>
+					<td>{{ option.quantity }}</td>
+					<td>{{ option.unitNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td>{{ option.totalNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+				</tr>
+			{% endfor %}
+
+			{% for surcharge in priceData.setupSurcharges %}
+				<tr>
+					<td>{{ surcharge.label }}</td>
+					<td>1</td>
+					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+				</tr>
+			{% endfor %}
+
+			{% for surcharge in priceData.filmSurcharges %}
+				<tr>
+					<td>{{ surcharge.label }}</td>
+					<td>1</td>
+					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table class="totals">
+		<tr>
+			<td class="label">Zwischensumme (netto)</td>
+			<td class="value">{{ priceData.netTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+		</tr>
+		<tr>
+			<td class="label">MwSt. {{ priceData.taxRate|number_format(2, ',', '.') }}%</td>
+			<td class="value">{{ priceData.taxAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+		</tr>
+		<tr>
+			<td class="label"><strong>Gesamtsumme (brutto)</strong></td>
+			<td class="value"><strong>{{ priceData.grossTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</strong></td>
+		</tr>
+	</table>
+
+	<div class="small" style="margin-top: 16px;">
+		Dieses Angebot wurde automatisch erstellt und ist freibleibend. Preise in EUR, vorbehaltlich Irrtum.
+	</div>
+</body>
+</html>

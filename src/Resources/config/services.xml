@@ -60,6 +60,16 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
+        <service id="HMnet\Configurator\Storefront\Controller\ConfiguratorPdfController" public="true" autowire="true" autoconfigure="true">
+            <argument type="service" id="product.repository" />
+            <argument type="service" id="hmnet_configurator_field.repository" />
+            <argument type="service" id="media.repository" />
+            <argument type="service" id="language.repository" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="Shopware\Core\Checkout\Document\Service\PdfRenderer" />
+            <tag name="controller.service_arguments" />
+        </service>
+
 
     </services>
 </container>
