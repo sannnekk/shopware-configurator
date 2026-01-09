@@ -12,6 +12,11 @@
         "label": {
             "de-DE": "HMnet: Konfigurator",
             "en-GB": "HMnet: Configurator"
+        },
+        "plugin-icon": "src/Resources/public/static/img/icon.png",
+        "manufacturerLink": {
+            "de-DE": "https://hmnet.de/",
+            "en-GB": "https://hmnet.de/"
         }
     },
     "autoload": {
