@@ -1,8 +1,4 @@
 <div class="hmnet-product-configurator__total">
-	<div class="hmnet-product-configurator__loader" data-hmnet-configurator-loader role="status" aria-live="polite" aria-hidden="true">
-		<span class="hmnet-product-configurator__loader__spinner" aria-hidden="true"></span>
-		<span class="hmnet-product-configurator__loader__text">{{ 'hmnet-configurator.status.calculating'|trans|sw_sanitize }}</span>
-	</div>
 	<div class="hmnet-product-configurator__total__net">
 		<h4>{{ 'hmnet-configurator.total.net'|trans }}</h4>
 		<div class="hmnet-product-configurator__total__net__price">
@@ -23,5 +19,9 @@
 			<span class="odometer value" data-hmnet-uid="total-gross" data-hmnet-product-configurator-total-gross>0,00</span>
 			<span class="currency">{{ currencySymbol }}</span>
 		</div>
+	</div>
+	<div class="hmnet-product-configurator__loader" data-hmnet-configurator-loader role="status" aria-live="polite" aria-hidden="true">
+		<span class="hmnet-product-configurator__loader__spinner" aria-hidden="true"></span>
+		<span class="hmnet-product-configurator__loader__text">{{ 'hmnet-configurator.status.calculating'|trans|sw_sanitize }}</span>
 	</div>
 </div>

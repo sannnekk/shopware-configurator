@@ -39,7 +39,7 @@
 		font-size: 0.875rem;
 		opacity: 0;
 		visibility: hidden;
-		transition: opacity 0.2s ease, visibility 0.2s ease;
+		transition: opacity 0.2s ease, visibility 0.2s ease, height 0.2s ease;
 		grid-column: 1 / -1;
 	}
 
@@ -165,8 +165,10 @@
 		gap: 0.6rem;
 		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
 		padding: 1rem;
+		padding-bottom: 0;
 		background: var(--bs-gray-100);
 		border-radius: 6px;
+		text-align: right;
 
 		&__net,
 		&__tax,
