@@ -39,7 +39,10 @@
 		font-size: 0.875rem;
 		opacity: 0;
 		visibility: hidden;
-		transition: opacity 0.2s ease, visibility 0.2s ease, height 0.2s ease;
+		transition:
+			opacity 0.2s ease,
+			visibility 0.2s ease,
+			height 0.2s ease;
 		grid-column: 1 / -1;
 	}
 
@@ -123,7 +126,9 @@
 		overflow: hidden;
 		max-height: 500px;
 		opacity: 1;
-		transition: max-height 0.25s ease, opacity 0.25s ease;
+		transition:
+			max-height 0.25s ease,
+			opacity 0.25s ease;
 
 		&--visible {
 			max-height: 500px;
@@ -215,6 +220,7 @@
 		.product-block-prices-grid {
 			.product-block-prices-cell {
 				padding: 5px;
+				text-align: right;
 			}
 
 			td,
