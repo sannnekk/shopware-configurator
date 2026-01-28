@@ -1,8 +1,26 @@
+{% set descriptionSource = config('HMnetConfigurator.config.descriptionSource')|default('meta') %}
+{% set shortDescriptionEntity = product.extensions.hmnetShortDescription|default(null) %}
+{% set shortDescription = shortDescriptionEntity ? (shortDescriptionEntity.translated.shortDescription ?? shortDescriptionEntity.shortDescription) : null %}
+{% set metaDescription = product.translated.metaDescription ?? product.metaDescription ?? null %}
+
 <h1 class="hmnet-product-configurator__title">
 	{{ product.translated.name }}
 </h1>
-{% if product.translated.metaDescription %}
-	<p class="hmnet-product-configurator__description">
-		{{ product.translated.metaDescription }}
-	</p>
+
+{% if descriptionSource == 'short' %}
+	{% if shortDescription %}
+		<p class="hmnet-product-configurator__description">
+			{{ shortDescription }}
+		</p>
+	{% elseif metaDescription %}
+		<p class="hmnet-product-configurator__description">
+			{{ metaDescription }}
+		</p>
+	{% endif %}
+{% elseif descriptionSource == 'meta' %}
+	{% if metaDescription %}
+		<p class="hmnet-product-configurator__description">
+			{{ metaDescription }}
+		</p>
+	{% endif %}
 {% endif %}

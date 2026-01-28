@@ -4,12 +4,34 @@
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
 
     <card>
-        <title>Minimal configuration</title>
+        <title>Configurator Description</title>
+        <title lang="de-DE">Konfigurator Beschreibung</title>
 
-        <input-field type="text">
-            <name>textField</name>
-            <label>Test field with default value</label>
-            <defaultValue>test</defaultValue>
+        <input-field type="single-select">
+            <name>descriptionSource</name>
+            <label>Description source</label>
+            <label lang="de-DE">Beschreibungsquelle</label>
+            <helpText>Short description requires the HMnetShortDescription plugin to be installed and active.</helpText>
+            <helpText lang="de-DE">Die Kurzbeschreibung setzt das Plugin HMnetShortDescription installiert und aktiv voraus.</helpText>
+
+            <options>
+                <option>
+                    <id>short</id>
+                    <name>Short description</name>
+                    <name lang="de-DE">Kurzbeschreibung</name>
+                </option>
+                <option>
+                    <id>meta</id>
+                    <name>Meta description</name>
+                    <name lang="de-DE">Meta-Beschreibung</name>
+                </option>
+                <option>
+                    <id>none</id>
+                    <name>No description</name>
+                    <name lang="de-DE">Keine Beschreibung</name>
+                </option>
+            </options>
+            <defaultValue>meta</defaultValue>
         </input-field>
     </card>
 

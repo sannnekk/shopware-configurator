@@ -30,6 +30,8 @@
 
         <service id="HMnet\Configurator\Storefront\Page\Product\ProductConfiguratorSubscriber">
             <argument type="service" id="hmnet_configurator_field.repository"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="plugin.repository" />
             <tag name="kernel.event_subscriber"/>
         </service>
 
