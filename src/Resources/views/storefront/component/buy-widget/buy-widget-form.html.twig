@@ -15,20 +15,17 @@
 	{{ parent() }}
 
 	<div class="hmnet-product-actions mt-2 d-flex gap-2 flex-wrap">
-		<button class="hmnet-action-button btn btn-secondary"
-			type="button"
-			data-hmnet-configurator-pdf-download="quote">
-			{{ 'HMnetConfigurator.BuyWidget.DownloadPdf'|trans }}
-		</button>
-		<button class="hmnet-action-button btn btn-secondary"
-			type="button"
-			data-hmnet-configurator-pdf-download="question">
-			{{ 'HMnetConfigurator.BuyWidget.ProductQuestion'|trans }}
-		</button>
-		<button class="hmnet-action-button btn btn-secondary"
-			type="button"
-			data-hmnet-configurator-pdf-download="free-item">
-			{{ 'HMnetConfigurator.BuyWidget.FreeItem'|trans }}
-		</button>
+		<div class="hmnet-form-trigger text-center">
+			<button class="hmnet-action-button btn btn-secondary"
+				type="button"
+				data-hmnet-configurator-pdf-download="quote">
+				{{ 'HMnetConfigurator.BuyWidget.DownloadPdf'|trans }}
+			</button>
+		</div>
+		{% if 'hmnet_form' is defined %}
+			{{ hmnet_form('019c0e6fffe579c5a7c96c75556abfca', 'button') }}
+			{{ hmnet_form('019c7b30d8c574b78fb22a866edf0095', 'button') }}
+			{{ hmnet_form('019c7b395d8b79bbb89196027e728dae', 'button') }}
+		{% endif %}
 	</div>
 {% endblock %}
