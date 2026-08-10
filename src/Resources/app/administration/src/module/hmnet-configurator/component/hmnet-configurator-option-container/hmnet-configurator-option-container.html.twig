@@ -29,8 +29,8 @@
 		</div>
 	</div>
 	<div class="hmnet-configurator-option-container__prices">
-		<div v-for="(price, index) in optionModel.priceTiers" :key="index" class="hmnet-configurator-option-container__price">
-			<hmnet-editable-field v-model="price.price" :label="`${$tc('hmnet-configurator.table.price.quantityStartLabel')} ${price.quantityStart} - ${$tc('hmnet-configurator.table.price.quantityEndLabel')} ${price.quantityEnd ?? '∞'}`" size="small" type="price" :is-editable="isEditable"/>
-		</div>
+		<hmnet-price-tier-editor 
+			v-model:price-tiers="optionModel.priceTiers" 
+			:is-editable="isEditable"/>
 	</div>
 </div>

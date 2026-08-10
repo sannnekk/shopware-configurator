@@ -31,21 +31,25 @@
 {% set showDeliveryDate = config('core.cart.showDeliveryTime') %}
 {% set orderCurrencyIso = (parentLineItem.order is defined and parentLineItem.order is not null) ? parentLineItem.order.currency.isoCode : currencyIso %}
 {% set pageEntity = page|default(null) %}
+{% set currentRoute = activeRoute|default(app.request.attributes.get('_route')|default('')) %}
+{% set isCheckoutConfirmRoute = isCheckoutConfirmRoute|default(currentRoute is same as('frontend.checkout.confirm.page')) %}
 
 {% block hmnet_product_configurator_line_item %}
-	<div class="hmnet-configurator-children" data-hmnet-configurator-children="true">
-		{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/header.html.twig' with {
-			parentLineItem: parentLineItem,
-			lineItemLink: lineItemLink,
-			lineItemModalLink: lineItemModalLink,
-			deliveryTimeName: deliveryTimeName,
-			baseUnitPrice: baseUnitPrice,
-			baseTotal: baseTotal,
-			currencyIso: currencyIso,
-			wishlistEnabled: wishlistEnabled,
-			showDeliveryDate: showDeliveryDate,
-			page: pageEntity
-		} only %}
+	<div class="hmnet-configurator-children{% if isCheckoutConfirmRoute %} hmnet-configurator-children--confirm{% endif %}" data-hmnet-configurator-children="true">
+		{% if not isCheckoutConfirmRoute %}
+			{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/header.html.twig' with {
+				parentLineItem: parentLineItem,
+				lineItemLink: lineItemLink,
+				lineItemModalLink: lineItemModalLink,
+				deliveryTimeName: deliveryTimeName,
+				baseUnitPrice: baseUnitPrice,
+				baseTotal: baseTotal,
+				currencyIso: currencyIso,
+				wishlistEnabled: wishlistEnabled,
+				showDeliveryDate: showDeliveryDate,
+				page: pageEntity
+			} only %}
+		{% endif %}
 
 		{% if children and children|length > 0 %}
 			<div class="hmnet-configurator-children__title">
@@ -63,14 +67,16 @@
 			currencyIso: currencyIso
 		} only %}
 
-		{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/actions.html.twig' with {
-			parentLineItem: parentLineItem,
-			redirectTo: redirectTo,
-			redirectParameters: redirectParameters|default(null),
-			formAction: formAction,
-			orderCurrencyIso: orderCurrencyIso,
-			displayMode: displayMode|default('default'),
-			order: order|default(null)
-		} only %}
+		{% if not isCheckoutConfirmRoute %}
+			{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/actions.html.twig' with {
+				parentLineItem: parentLineItem,
+				redirectTo: redirectTo,
+				redirectParameters: redirectParameters|default(null),
+				formAction: formAction,
+				orderCurrencyIso: orderCurrencyIso,
+				displayMode: displayMode|default('default'),
+				order: order|default(null)
+			} only %}
+		{% endif %}
 	</div>
 {% endblock %}

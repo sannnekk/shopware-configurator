@@ -1,0 +1,49 @@
+<div class="hmnet-price-tier-editor">
+	<div v-for="(tier, index) in tiersModel" :key="index" class="hmnet-price-tier-editor__tier">
+		<div class="hmnet-price-tier-editor__tier-range">
+			<hmnet-editable-field 
+				:model-value="tier.quantityStart" 
+				@update:model-value="(val) => onUpdateTierStart(index, val)"
+				:label="$tc('hmnet-configurator.table.price.quantityStartLabel')" 
+				size="small" 
+				type="number" 
+				:is-editable="isEditable"/>
+			<span class="hmnet-price-tier-editor__tier-separator">-</span>
+			<div class="hmnet-price-tier-editor__tier-end" v-if="isEditable && !isLastTier(index)">
+				<hmnet-editable-field 
+					:model-value="tier.quantityEnd" 
+					@update:model-value="(val) => onUpdateTierEnd(index, val)"
+					:label="$tc('hmnet-configurator.table.price.quantityEndLabel')" 
+					size="small" 
+					type="number" 
+					:is-editable="isEditable"/>
+			</div>
+			<div class="hmnet-price-tier-editor__tier-end hmnet-price-tier-editor__tier-end--infinity" v-else>
+				<label>{{ $tc('hmnet-configurator.table.price.quantityEndLabel') }}</label>
+				<span>{{ formatQuantityEnd(tier) }}</span>
+			</div>
+		</div>
+		<div class="hmnet-price-tier-editor__tier-price">
+			<hmnet-editable-field 
+				:model-value="tier.price" 
+				@update:model-value="(val) => onUpdateTierPrice(index, val)"
+				:label="$tc('hmnet-configurator.table.price.priceLabel')" 
+				size="small" 
+				type="price" 
+				:is-editable="isEditable"/>
+		</div>
+		<div class="hmnet-price-tier-editor__tier-actions" v-if="isEditable">
+			<mt-button variant="critical" size="x-small" @click="onRemoveTier(index)">
+				<mt-icon name="regular-trash" size="0.9rem"/>
+			</mt-button>
+		</div>
+	</div>
+	<div class="hmnet-price-tier-editor__no-tiers" v-if="!tiersModel || tiersModel.length === 0">
+		<span>{{ $tc('hmnet-configurator.table.price.noTiers') }}</span>
+	</div>
+	<div class="hmnet-price-tier-editor__add-tier" v-if="isEditable">
+		<mt-button variant="action" size="x-small" @click="onAddTier">
+			{{ $tc('hmnet-configurator.table.price.addTier') }}
+		</mt-button>
+	</div>
+</div>

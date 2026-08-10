@@ -5,8 +5,8 @@ import { Odometer } from './odometer-plugin'
 /**
  * HMnet Product Configurator Plugin
  *
- * Warning: this plugin only works on sales channels with 'net' price display mode.
- * Switch to gross mode is not supported yet.
+ * All price calculations are performed server-side for consistency.
+ * This plugin fetches calculated prices from the backend API.
  */
 export default class HmnetProductConfiguratorPlugin extends Plugin {
 	/**
@@ -15,9 +15,14 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	currencyDecimals = 2
 
 	/**
-	 * @type {number}
+	 * @type {string}
 	 */
-	taxRate = 19
+	currencySymbol = '€'
+
+	/**
+	 * @type {AbortController|null}
+	 */
+	currentRequest = null
 
 	/**
 	 * @type {string[]}
@@ -34,21 +39,28 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 
 	init() {
 		this.loaderEl = this.el.querySelector('[data-hmnet-configurator-loader]')
+		this.hintEl = this.el.querySelector('[data-hmnet-configurator-hint]')
+		this.quantityInput = document.querySelector(
+			'[data-quantity-selector] input'
+		)
+
 		this.debouncedCalculate = this.debounce(
-			this.calculateWithLoading.bind(this),
-			800
+			this.calculateFromServer.bind(this),
+			400
 		)
 		this.registerEvents()
-		this.calculateWithLoading()
+		this.calculateFromServer()
 	}
 
 	registerEvents() {
-		document
-			.querySelector('[data-quantity-selector] input')
-			?.addEventListener('change', this.debouncedCalculate.bind(this))
-		document
-			.querySelector('[data-quantity-selector] input')
-			?.addEventListener('input', this.debouncedCalculate.bind(this))
+		this.quantityInput?.addEventListener(
+			'change',
+			this.debouncedCalculate.bind(this)
+		)
+		this.quantityInput?.addEventListener(
+			'input',
+			this.debouncedCalculate.bind(this)
+		)
 
 		document
 			.querySelector('[data-quantity-selector] .js-button-minus')
@@ -99,108 +111,193 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	 * @returns {number}
 	 */
 	getQuantity() {
-		return (
-			parseInt(
-				document.querySelector('[data-quantity-selector] input')?.value
-			) || 0
-		)
+		return parseInt(this.quantityInput?.value) || 1
 	}
 
 	/**
-	 * Recalculates all prices based on selected options and quantity
-	 *
-	 * @return {void}
+	 * @param {number} quantity
 	 */
-	calculate() {
-		/**
-		 * @type {{ quantityStart: number, quantityEnd: number|null, price: number }[]}
-		 */
-		this.productPrices =
-			Object.values(JSON.parse(this.el.dataset.productPrices || '{}')) ?? []
-		this.taxRate = parseFloat(this.el.dataset.taxRate)
-		this.currencyDecimals = parseInt(this.el.dataset.currencyDecimals) || 2
-		this.currencySymbol = this.el.dataset.currencySymbol || ''
-		this.labelTemplates = {
-			setup:
-				this.el.dataset.setupLabelTemplate || 'Setup: %option%%possibility%',
-			film: this.el.dataset.filmLabelTemplate || 'Film: %option%%possibility%',
+	setQuantity(quantity) {
+		if (this.quantityInput) {
+			this.quantityInput.value = quantity
 		}
-		this.fieldIds = [...this.el.querySelectorAll('[data-hmnet-field]')]
-			.map((el) => el.dataset.fieldId)
-			.filter(Boolean)
+	}
 
-		const quantity = this.getQuantity()
-
-		/**
-		 * @type {number}
-		 */
-		const wholePriceNet = 0
-		/**
-		 * @type {{ label: string, price: number }[]}
-		 */
-		const additionalOptions = []
-
-		/**
-		 * @type {Record<string, string>}
-		 */
-		const chosenPossibilityIds = {}
+	/**
+	 * Get the current selection of field options
+	 * @returns {Record<string, string>}
+	 */
+	getSelection() {
+		const selection = {}
+		this.fieldIds = [
+			...this.el.querySelectorAll('[data-hmnet-field]'),
+		].map((el) => el.dataset.fieldId)
 
 		for (const fieldId of this.fieldIds) {
-			const [chosenUnitPrice, possibilityId, opts] = this.getDataForField(
-				fieldId,
-				quantity
+			const field = this.el.querySelector(
+				`[data-hmnet-field][data-field-id="${fieldId}"]`
 			)
+			const select = field?.querySelector('[data-hmnet-field-select]')
 
-			const unitTotal = quantity * chosenUnitPrice
-
-			this.setFieldElement(fieldId, chosenUnitPrice, quantity, unitTotal)
-
-			additionalOptions.push(...opts)
-
-			wholePriceNet += unitTotal
-			wholePriceNet += opts.reduce((sum, opt) => sum + opt.price, 0)
-
-			if (possibilityId) {
-				chosenPossibilityIds[fieldId] = possibilityId
+			if (select?.value) {
+				selection[fieldId] = select.value
 			}
 		}
 
-		const productWholePriceNet =
-			this.getProductPrice(this.productPrices, quantity) * quantity
-
-		wholePriceNet += productWholePriceNet
-
-		const [wholePriceGross, wholeTax] = this.getGrossFromNet(wholePriceNet)
-
-		this.setProductPriceElements(
-			productWholePriceNet,
-			this.productPrices,
-			quantity
-		)
-		this.setFilmAndSetupOptions(additionalOptions)
-		this.setChosenOptionsInCartData(chosenPossibilityIds)
-		this.setWholePriceElements(wholePriceNet, wholePriceGross, wholeTax)
+		return selection
 	}
 
-	calculateWithLoading() {
+	/**
+	 * Fetch calculated prices from the server
+	 */
+	async calculateFromServer() {
+		// Cancel any pending request
+		if (this.currentRequest) {
+			this.currentRequest.abort()
+		}
+
+		this.currentRequest = new AbortController()
 		this.setLoading(true)
+		this.hideHint()
+
 		try {
-			this.calculate()
+			const response = await fetch(this.getCalculateEndpoint(), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-Token': this.getCsrfToken(),
+				},
+				body: JSON.stringify({
+					productId: this.getProductId(),
+					quantity: this.getQuantity(),
+					selection: this.getSelection(),
+				}),
+				signal: this.currentRequest.signal,
+			})
+
+			if (!response.ok) {
+				throw new Error('Failed to calculate prices')
+			}
+
+			const result = await response.json()
+
+			if (!result.success) {
+				console.error('Calculation error:', result.error)
+				return
+			}
+
+			this.applyCalculationResult(result)
+		} catch (error) {
+			if (error.name === 'AbortError') {
+				// Request was cancelled, ignore
+				return
+			}
+			console.error('Error calculating prices:', error)
 		} finally {
+			this.currentRequest = null
 			this.setLoading(false)
 		}
 	}
 
 	/**
-	 * @param {{ label: string, price: number }[]} options
+	 * Apply the calculation result from the server
+	 * @param {Object} result
 	 */
-	setFilmAndSetupOptions(options) {
+	applyCalculationResult(result) {
+		this.currencyDecimals = result.currencyDecimals ?? 2
+		this.currencySymbol = result.currencySymbol ?? '€'
+
+		// Handle quantity adjustment
+		if (result.quantityAdjusted && result.adjustedQuantity) {
+			this.setQuantity(result.adjustedQuantity)
+
+			if (result.minimumQuantityHint) {
+				this.showHint(result.minimumQuantityHint)
+			}
+		}
+
+		const quantity = result.adjustedQuantity ?? this.getQuantity()
+
+		// Update product price display
+		this.setProductPriceElements(
+			result.product.unitNet,
+			quantity,
+			result.product.totalNet
+		)
+
+		// Update option prices
+		for (const option of result.options) {
+			this.setFieldElement(
+				option.fieldId,
+				option.unitNet,
+				quantity,
+				option.totalNet
+			)
+		}
+
+		// Update surcharges (setup/film)
+		this.setSurcharges(result.surcharges)
+
+		// Update totals
+		this.setWholePriceElements(
+			result.totals.netTotal,
+			result.totals.grossTotal,
+			result.totals.taxAmount
+		)
+
+		// Update cart data
+		this.setChosenOptionsInCartData(this.getSelection())
+	}
+
+	/**
+	 * Show a hint message to the user
+	 * @param {string} message
+	 */
+	showHint(message) {
+		if (!this.hintEl) {
+			// Create hint element if it doesn't exist
+			this.hintEl = document.createElement('div')
+			this.hintEl.className = 'hmnet-product-configurator__hint alert alert-info'
+			this.hintEl.setAttribute('data-hmnet-configurator-hint', '')
+			this.hintEl.setAttribute('role', 'alert')
+
+			const container = this.el.querySelector(
+				'.hmnet-product-configurator__content'
+			)
+			if (container) {
+				container.insertBefore(this.hintEl, container.firstChild)
+			} else {
+				this.el.insertBefore(this.hintEl, this.el.firstChild)
+			}
+		}
+
+		this.hintEl.textContent = message
+		this.hintEl.style.display = 'block'
+		this.hintEl.setAttribute('aria-hidden', 'false')
+	}
+
+	/**
+	 * Hide the hint message
+	 */
+	hideHint() {
+		if (this.hintEl) {
+			this.hintEl.style.display = 'none'
+			this.hintEl.setAttribute('aria-hidden', 'true')
+		}
+	}
+
+	/**
+	 * @param {array} surcharges
+	 */
+	setSurcharges(surcharges) {
 		const container = this.el.querySelector('[data-hmnet-breakdown-list]')
 		const wrapper = container?.closest('[data-hmnet-breakdown]')
 
-		const items = options.filter((opt) => opt.price > 0)
+		if (!container) return
+
+		const items = surcharges.filter((s) => s.amount > 0)
 		container.innerHTML = items
-			.map((opt) => this.getOptionTemplate(opt.label, opt.price))
+			.map((s) => this.getOptionTemplate(s.label, s.amount))
 			.join('')
 
 		const hasItems = items.length > 0
@@ -219,13 +316,11 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 
 	/**
 	 * Set product price elements
-	 * @param {number} productWholePriceNet
-	 * @param {{ quantityStart: number, quantityEnd: number|null, price: number }[]} productPrices
+	 * @param {number} unitPrice
 	 * @param {number} quantity
+	 * @param {number} totalPrice
 	 */
-	setProductPriceElements(productWholePriceNet, productPrices, quantity) {
-		const productUnitPriceNet = this.getProductPrice(productPrices, quantity)
-
+	setProductPriceElements(unitPrice, quantity, totalPrice) {
 		const productUnitPriceEl = this.el.querySelector(
 			'[data-hmnet-product-unit-price]'
 		)
@@ -236,17 +331,9 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			'[data-hmnet-product-total]'
 		)
 
-		this.setNumber(
-			productUnitPriceEl,
-			productUnitPriceNet,
-			this.currencyDecimals
-		)
+		this.setNumber(productUnitPriceEl, unitPrice, this.currencyDecimals)
 		this.setNumber(productQuantityEl, quantity, 0, '', '')
-		this.setNumber(
-			productTotalPriceEl,
-			productWholePriceNet,
-			this.currencyDecimals
-		)
+		this.setNumber(productTotalPriceEl, totalPrice, this.currencyDecimals)
 	}
 
 	/**
@@ -259,104 +346,6 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 			<span>${label}</span>
 			<span>${price.toFixed(this.currencyDecimals)} ${this.currencySymbol}</span>
 		</li>`
-	}
-
-	/**
-	 * @param {string} fieldId
-	 * @param {number} quantity
-	 * @returns {[number, string|null, { label: string, price: number }, { label: string, price: number }]}
-	 */
-	getDataForField(fieldId, quantity) {
-		const defaultReturn = [0, null, [], []]
-		const field = this.el.querySelector(
-			`[data-hmnet-field][data-field-id="${fieldId}"]`
-		)
-		const chosenOptionEl = field.querySelector(`[data-hmnet-field-select]`)
-
-		const setupPrice =
-			parseFloat(
-				chosenOptionEl.options[chosenOptionEl.selectedIndex].dataset.setupPrice
-			) || 0
-		const filmPrice =
-			parseFloat(
-				chosenOptionEl.options[chosenOptionEl.selectedIndex].dataset.filmPrice
-			) || 0
-
-		if (!field) {
-			return defaultReturn
-		}
-
-		const chosenPossibilityId = field.querySelector(
-			'[data-hmnet-field-select]'
-		).value
-
-		const options = Object.values(JSON.parse(field.dataset.options || '[]'))
-
-		if (!chosenPossibilityId) {
-			return defaultReturn
-		}
-
-		const option = options.find((o) =>
-			Object.values(o.possibilities).some((p) => p.id === chosenPossibilityId)
-		)
-
-		const possibility = Object.values(option?.possibilities).find(
-			(p) => p.id === chosenPossibilityId
-		)
-
-		if (!option || !possibility) {
-			return defaultReturn
-		}
-
-		const optionName = option.translated.name || option.name || ''
-		const possibilityName =
-			possibility.translated.name || possibility.name || ''
-		const multiplicator = possibility.multiplicator ?? 1
-
-		return [
-			this.getUnitPriceForOption(option.priceTiers, multiplicator, quantity),
-			chosenPossibilityId,
-			[
-				{
-					label: this.getLabelFromTemplate(
-						this.labelTemplates.setup,
-						'Einrichtung',
-						optionName,
-						possibilityName
-					),
-					price: (setupPrice ?? 0) * multiplicator,
-				},
-				{
-					label: this.getLabelFromTemplate(
-						this.labelTemplates.film,
-						'Film',
-						optionName,
-						possibilityName
-					),
-					price: (filmPrice ?? 0) * multiplicator,
-				},
-			],
-		]
-	}
-
-	/**
-	 * @param {object} priceTiers
-	 * @param {number} multiplicator
-	 * @param {number} quantity
-	 * @returns {number}
-	 */
-	getUnitPriceForOption(priceTiers, multiplicator, quantity) {
-		const tier = priceTiers.find(
-			(t) =>
-				(t.quantityStart <= quantity && t.quantityEnd >= quantity) ||
-				(t.quantityEnd === null && t.quantityStart <= quantity)
-		)
-
-		if (!tier) {
-			return 0
-		}
-
-		return tier.price * multiplicator
 	}
 
 	/**
@@ -374,40 +363,6 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		input.value = JSON.stringify({
 			hmnetProductConfigurator: chosenPossibilityIds,
 		})
-	}
-
-	/**
-	 * Calculates gross price and tax amount from net price, concidering taxRate and currencyDecimals
-	 * @param {number} netPrice
-	 * @returns {[number, number]}
-	 */
-	getGrossFromNet(netPrice) {
-		const grossPrice = parseFloat(
-			(netPrice * (1 + this.taxRate / 100)).toFixed(this.currencyDecimals)
-		)
-
-		return [grossPrice, grossPrice - netPrice]
-	}
-
-	/**
-	 * Calculates product price based on quantity and productPrices tiers
-	 *
-	 * @param {{ quantityStart: number, quantityEnd: number|null, price: number }[]} productPrices
-	 * @param {number} quantity
-	 * @returns {number}
-	 */
-	getProductPrice(productPrices, quantity) {
-		const tier = productPrices.find(
-			(t) =>
-				t.quantityStart <= quantity &&
-				(t.quantityEnd === null || t.quantityEnd >= quantity)
-		)
-
-		if (!tier) {
-			return 0
-		}
-
-		return tier.price
 	}
 
 	/**
@@ -479,6 +434,8 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 	 * @param {string} decimal
 	 */
 	setNumber(htmlEl, price, decimals = 2, separator = '.', decimal = ',') {
+		if (!htmlEl) return
+
 		const prevValue = parseFloat(htmlEl.dataset.counterPrevValue || '0')
 		const elementUid = htmlEl.dataset.hmnetUid ?? '-'
 
@@ -504,20 +461,10 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		}
 
 		try {
-			const payloadInput = document.querySelector(
-				'[data-hmnet-configurator-payload]'
-			)
-			let rawPayload = {}
-			try {
-				rawPayload = JSON.parse(payloadInput?.value || '{}')
-			} catch (e) {
-				rawPayload = {}
-			}
-
 			const requestBody = {
 				productId: this.getProductId(),
-				quantity: this.getQuantity() || 1,
-				payload: rawPayload.hmnetProductConfigurator || {},
+				quantity: this.getQuantity(),
+				payload: this.getSelection(),
 			}
 
 			const response = await fetch(this.el.dataset.pdfEndpoint, {
@@ -559,22 +506,7 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		return this.el.dataset.productId || ''
 	}
 
-	/**
-	 * @param {string} template
-	 * @param {string} fallbackPrefix
-	 * @param {string} optionName
-	 * @param {string} possibilityName
-	 * @returns {string}
-	 */
-	getLabelFromTemplate(template, fallbackPrefix, optionName, possibilityName) {
-		const safeOption = optionName || ''
-		const safePossibility = possibilityName ? ` ${possibilityName}` : ''
-		const baseTemplate = template || `${fallbackPrefix}: %option%%possibility%`
-
-		return baseTemplate
-			.replace(/%option%/g, safeOption)
-			.replace(/%possibility%/g, safePossibility)
-			.replace(/\s+/g, ' ')
-			.trim()
+	getCalculateEndpoint() {
+		return this.el.dataset.calculateEndpoint || '/hmnet/configurator/calculate'
 	}
 }

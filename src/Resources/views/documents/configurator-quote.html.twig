@@ -4,111 +4,654 @@
 	<meta charset="UTF-8" />
 	<title>Angebot</title>
 	<style>
-		body { font-family: Arial, sans-serif; color: #111; margin: 24px; }
-		h1 { font-size: 20px; margin: 0 0 12px 0; }
-		h2 { font-size: 16px; margin: 24px 0 8px 0; }
-		.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 12px; margin-bottom: 20px; }
-		.header__meta { text-align: right; font-size: 12px; line-height: 1.4; }
-		.shop-address { font-size: 12px; line-height: 1.4; }
-		.table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-		.table th, .table td { border: 1px solid #ccc; padding: 8px; font-size: 12px; }
-		.table th { background: #f5f5f5; text-align: left; }
-		.totals { width: 320px; margin-left: auto; margin-top: 20px; font-size: 12px; }
-		.totals td { padding: 6px 8px; }
-		.totals .label { text-align: left; }
-		.totals .value { text-align: right; }
-		.small { font-size: 11px; color: #555; }
+		@import url('https://fonts.googleapis.com/css2?family=Exo:wght@400;600;700&display=swap');
+
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+
+		body {
+			font-family: 'Exo', Arial, sans-serif;
+			font-size: 9pt;
+			color: #1a1a1a;
+			line-height: 1.5;
+		}
+
+		.page {
+			padding: 14mm 18mm 22mm 18mm;
+			position: relative;
+		}
+
+		.page-break { page-break-after: always; }
+
+		/* ── DIN-header table ── */
+		.din-header {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 0;
+		}
+		.din-header td { padding: 0; vertical-align: top; }
+		.din-header .col-left  { width: 55%; }
+		.din-header .col-right { width: 45%; text-align: right; }
+
+		.logo {
+			max-height: 70px;
+			max-width: 200px;
+			display: block;
+			margin-left: auto;
+			margin-bottom: 6px;
+		}
+
+		.shop-headline {
+			font-size: 11pt;
+			font-weight: 700;
+			color: #7DBD41;
+			text-align: right;
+		}
+
+		.shop-contact {
+			font-size: 8pt;
+			color: #555;
+			text-align: right;
+			line-height: 1.6;
+		}
+
+		.absender-line {
+			font-size: 7pt;
+			color: #888;
+			border-bottom: 1px solid #bbb;
+			padding-bottom: 2px;
+			margin-bottom: 8px;
+		}
+
+		/* ── Customer fields (DIN letter window) ── */
+		.customer-table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.customer-table td {
+			padding: 3px 0;
+			font-size: 8.5pt;
+			vertical-align: bottom;
+		}
+		.customer-table td.lbl {
+			width: 28%;
+			color: #666;
+			padding-right: 4px;
+		}
+		.customer-table td.fld {
+			border-bottom: 1px solid #aaa;
+		}
+		.customer-table tr.spacer td { height: 6px; border: none; }
+
+		.date-line {
+			font-size: 8.5pt;
+			text-align: right;
+			margin-top: 6px;
+		}
+
+		/* ── Separator ── */
+		hr.sep {
+			border: none;
+			border-top: 2px solid #7DBD41;
+			margin: 10px 0 10px 0;
+		}
+
+		/* ── Subject / salutation ── */
+		.subject {
+			font-size: 9.5pt;
+			font-weight: 700;
+			margin-bottom: 6px;
+		}
+
+		.salutation {
+			font-size: 9pt;
+			margin-bottom: 10px;
+			line-height: 1.6;
+		}
+
+		/* ── Article header line ── */
+		.article-line {
+			font-size: 9pt;
+			margin-bottom: 10px;
+		}
+
+		/* ── Positions table ── */
+		.pos-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 8.5pt;
+			margin-bottom: 8px;
+		}
+		.pos-table thead tr { background-color: #474a57; }
+		.pos-table thead th {
+			padding: 5px 8px;
+			font-weight: 600;
+			color: #fff;
+			text-align: left;
+			border: 1px solid #474a57;
+		}
+		.pos-table thead th.r { text-align: right; }
+		.pos-table tbody td {
+			padding: 4px 8px;
+			border: 1px solid #ddd;
+		}
+		.pos-table tbody td.r { text-align: right; }
+
+		/* ── Info lines (Versand / Lieferung / Zahlung) ── */
+		.info-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 8px 0;
+			font-size: 8.5pt;
+		}
+		.info-table td { padding: 2px 8px; }
+		.info-table td.key { width: 18%; color: #555; font-weight: 600; }
+
+		/* ── Totals ── */
+		.totals-outer {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+		}
+		.totals-outer td { vertical-align: top; padding: 0; }
+
+		.totals-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 9pt;
+		}
+		.totals-table td { padding: 3px 8px; }
+		.totals-table td.r { text-align: right; }
+		.totals-table tr.net td  { font-weight: 700; color: #474a57; }
+		.totals-table tr.gross td {
+			font-weight: 700;
+			color: #7DBD41;
+			border-top: 2px solid #7DBD41;
+			text-decoration: underline;
+		}
+
+		/* ── Page footer ── */
+		.doc-footer {
+			position: absolute;
+			bottom: 8mm;
+			left: 18mm;
+			right: 18mm;
+			border-top: 1px solid #ccc;
+			padding-top: 4px;
+			font-size: 7pt;
+			color: #aaa;
+			text-align: center;
+		}
+
+		/* ── Page 2 header ── */
+		.page2-header {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.page2-header td { padding: 0; vertical-align: top; }
+
+		.page-num {
+			font-size: 8.5pt;
+			color: #888;
+			text-align: right;
+			margin-top: 4px;
+		}
+
+		/* ── Page 2 body ── */
+		.body-text {
+			font-size: 9pt;
+			line-height: 1.7;
+			margin-bottom: 10px;
+		}
+
+		/* ── Auftragserteilung ── */
+		.order-heading {
+			font-size: 9.5pt;
+			font-weight: 700;
+			text-decoration: underline;
+			margin: 20px 0 6px 0;
+		}
+
+		.order-box {
+			border: 1px solid #bbb;
+			padding: 6px 10px;
+			font-size: 9pt;
+			margin-bottom: 0;
+		}
+
+		.sig-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 0;
+		}
+		.sig-table td {
+			padding: 0 8px;
+			border: 1px solid #bbb;
+			border-top: none;
+			height: 50px;
+			width: 33.33%;
+			vertical-align: bottom;
+		}
+		.sig-table td:first-child { padding-left: 10px; }
+		.sig-label-row td {
+			padding: 3px 8px;
+			font-size: 8pt;
+			color: #555;
+			border: 1px solid #bbb;
+			border-top: none;
+			height: auto;
+		}
+
+		/* ── AGB page ── */
+		.agb-title {
+			font-size: 10pt;
+			font-weight: 700;
+			margin-bottom: 10px;
+			line-height: 1.4;
+		}
+
+		.agb-cols {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.agb-cols td {
+			vertical-align: top;
+			width: 50%;
+			font-size: 7.5pt;
+			line-height: 1.6;
+			color: #222;
+		}
+		.agb-cols td:first-child { padding-right: 10px; }
+		.agb-cols td:last-child  { padding-left: 10px; }
+
+		.agb-section-title {
+			font-size: 8pt;
+			font-weight: 700;
+			color: #474a57;
+			margin: 8px 0 2px 0;
+		}
+
+		.agb-footer {
+			position: absolute;
+			bottom: 8mm;
+			left: 18mm;
+			right: 18mm;
+			border-top: 1px solid #ccc;
+			padding-top: 4px;
+		}
+		.agb-footer-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 7pt;
+			color: #555;
+		}
+		.agb-footer-table td { padding: 0 4px; vertical-align: top; }
+		.agb-footer-table .logo-cell img {
+			max-height: 28px;
+			display: block;
+		}
 	</style>
 </head>
 <body>
-	<div class="header">
-		<div class="shop-address">
-			{% if shop.logoUrl %}
-				<img src="{{ shop.logoUrl }}" alt="Logo" style="max-height: 50px; margin-bottom: 8px;" />
-			{% endif %}
-			<div><strong>{{ shop.address.name }}</strong></div>
-			<div>{{ shop.address.street }}</div>
-			<div>{{ shop.address.zip }} {{ shop.address.city }}</div>
-			{% if shop.address.email %}<div>{{ shop.address.email }}</div>{% endif %}
-			{% if shop.address.phone %}<div>{{ shop.address.phone }}</div>{% endif %}
-		</div>
-		<div class="header__meta">
-			<div><strong>Angebot</strong></div>
-			<div>Datum: {{ generatedAt|date('d.m.Y H:i') }}</div>
-			<div>Referenz: {{ product.productNumber }}</div>
-			{% if shop.url %}<div>{{ shop.url }}</div>{% endif %}
-		</div>
-	</div>
 
-	<h1>Angebot: {{ product.translated.name|default(product.name) }}</h1>
-	{% if product.translated.metaDescription %}
-		<div class="small">{{ product.translated.metaDescription }}</div>
-	{% endif %}
+{# ================================================================ #}
+{# PAGE 1 — Angebot (DIN 5008 letter layout)                       #}
+{# ================================================================ #}
+<div class="page page-break">
 
-	<h2>Positionen</h2>
-	<table class="table">
+	<table class="din-header">
+		<tr>
+			{# Left: absender line + customer address window #}
+			<td class="col-left">
+				<div class="absender-line">{{ shop.address.name }}, {{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}</div>
+
+				<table class="customer-table">
+					<tr>
+						<td class="lbl">Firma*</td>
+						<td class="fld">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="lbl">Name*</td>
+						<td class="fld">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="lbl">Straße*</td>
+						<td class="fld">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="lbl">Ort*</td>
+						<td class="fld">&nbsp;</td>
+					</tr>
+					<tr class="spacer"><td colspan="2"></td></tr>
+					<tr>
+						<td class="lbl">E-Mail*</td>
+						<td class="fld">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="lbl">Telefon*</td>
+						<td class="fld">&nbsp;</td>
+					</tr>
+				</table>
+			</td>
+
+			{# Right: logo + shop contact + date #}
+			<td class="col-right">
+				{% if shop.logoUrl %}
+					<img class="logo" src="{{ shop.logoUrl }}" alt="{{ shop.address.name }}" />
+				{% endif %}
+				<div class="shop-headline">
+					{% if shop.address.phone %}Tel.: {{ shop.address.phone }}{% else %}{{ shop.address.name }}{% endif %}
+				</div>
+				<div class="shop-contact">
+					{% if shop.address.email %}{{ shop.address.email }}<br/>{% endif %}
+					{% if shop.url %}{{ shop.url }}{% endif %}
+				</div>
+				<div class="date-line">Datum: {{ generatedAt|date('d.m.Y') }}</div>
+			</td>
+		</tr>
+	</table>
+
+	<hr class="sep" />
+
+	<p class="subject">Ihr Angebot: {{ product.productNumber }} {{ product.translated.name|default(product.name) }}</p>
+
+	<p class="salutation">
+		Sehr geehrte Damen und Herren,<br/>
+		gerne überreichen wir Ihnen nachstehend folgendes Angebot:
+	</p>
+
+	<p class="article-line">
+		<strong>{{ product.productNumber }}</strong>&nbsp;&nbsp; {{ product.translated.name|default(product.name) }}
+	</p>
+
+	<table class="pos-table">
 		<thead>
 			<tr>
-				<th style="width: 40%">Beschreibung</th>
-				<th style="width: 10%">Menge</th>
-				<th style="width: 25%">Einzelpreis (Netto)</th>
-				<th style="width: 25%">Gesamt (Netto)</th>
+				<th style="width: 48%;">Position</th>
+				<th style="width: 10%;" class="r">Anzahl</th>
+				<th style="width: 21%;" class="r">Stückpreis</th>
+				<th style="width: 21%;" class="r">Summe</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
-				<td>{{ product.translated.name|default(product.name) }}</td>
-				<td>{{ quantity }}</td>
-				<td>{{ priceData.productUnit|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
-				<td>{{ priceData.productTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+				<td>Preis des Artikels</td>
+				<td class="r">{{ quantity }}</td>
+				<td class="r">{{ priceData.productUnit|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+				<td class="r">{{ priceData.productTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 			</tr>
-
 			{% for option in priceData.optionLines %}
 				<tr>
 					<td>{{ option.label }}</td>
-					<td>{{ option.quantity }}</td>
-					<td>{{ option.unitNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
-					<td>{{ option.totalNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">{{ option.quantity }}</td>
+					<td class="r">{{ option.unitNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">{{ option.totalNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				</tr>
 			{% endfor %}
-
 			{% for surcharge in priceData.setupSurcharges %}
 				<tr>
 					<td>{{ surcharge.label }}</td>
-					<td>1</td>
-					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
-					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">1</td>
+					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				</tr>
 			{% endfor %}
-
 			{% for surcharge in priceData.filmSurcharges %}
 				<tr>
 					<td>{{ surcharge.label }}</td>
-					<td>1</td>
-					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
-					<td>{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">1</td>
+					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
 	</table>
 
-	<table class="totals">
+	{# Versand / Lieferung / Zahlung — adjust text as needed #}
+	<table class="info-table">
 		<tr>
-			<td class="label">Zwischensumme (netto)</td>
-			<td class="value">{{ priceData.netTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+			<td class="key">Versand</td>
+			<td>kostenfrei (an eine deutsche Adresse – außer Inseln)</td>
 		</tr>
 		<tr>
-			<td class="label">MwSt. {{ priceData.taxRate|number_format(2, ',', '.') }}%</td>
-			<td class="value">{{ priceData.taxAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+			<td class="key">Lieferung</td>
+			<td>ca. 20 Werktage nach Druckfreigabe</td>
 		</tr>
 		<tr>
-			<td class="label"><strong>Gesamtsumme (brutto)</strong></td>
-			<td class="value"><strong>{{ priceData.grossTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</strong></td>
+			<td class="key">Zahlung</td>
+			<td>nach Druckfreigabe mit 2&nbsp;% Skonto</td>
 		</tr>
 	</table>
 
-	<div class="small" style="margin-top: 16px;">
-		Dieses Angebot wurde automatisch erstellt und ist freibleibend. Preise in EUR, vorbehaltlich Irrtum.
+	<table class="totals-outer">
+		<tr>
+			<td style="width: 55%;"></td>
+			<td style="width: 45%;">
+				<table class="totals-table">
+					<tr class="net">
+						<td>Gesamtpreis NETTO</td>
+						<td class="r">{{ priceData.netTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					</tr>
+					<tr>
+						<td>zzgl. MwSt. {{ priceData.taxRate|number_format(0) }}&nbsp;%</td>
+						<td class="r">{{ priceData.taxAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					</tr>
+					<tr class="gross">
+						<td>Gesamtpreis inkl. MwSt.</td>
+						<td class="r">{{ priceData.grossTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+	<div class="doc-footer">
+		{{ shop.address.name }}
+		{% if shop.address.street %} &bull; {{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}{% endif %}
+		{% if shop.address.phone %} &bull; Tel.: {{ shop.address.phone }}{% endif %}
+		{% if shop.address.email %} &bull; {{ shop.address.email }}{% endif %}
 	</div>
+</div>
+
+
+{# ================================================================ #}
+{# PAGE 2 — Bedingungen & Auftragserteilung                        #}
+{# ================================================================ #}
+<div class="page page-break">
+
+	<table class="page2-header" style="border-bottom: 2px solid #7DBD41; padding-bottom: 10px; margin-bottom: 16px;">
+		<tr>
+			<td style="width: 55%;"></td>
+			<td style="width: 45%; text-align: right;">
+				{% if shop.logoUrl %}
+					<img class="logo" src="{{ shop.logoUrl }}" alt="{{ shop.address.name }}" />
+				{% endif %}
+				<div class="shop-headline">
+					{% if shop.address.phone %}Tel.: {{ shop.address.phone }}{% else %}{{ shop.address.name }}{% endif %}
+				</div>
+				<div class="shop-contact">
+					{% if shop.address.email %}{{ shop.address.email }}{% endif %}
+				</div>
+				<div class="page-num">Seite -2-</div>
+			</td>
+		</tr>
+	</table>
+
+	{# ── Placeholder body text – fill in as needed ── #}
+	<p class="body-text">
+		Unser Angebot gilt nur für Industrie, Handel, Handwerk, Gewerbe, Institutionen und Vereine.
+		Alle Preise verstehen sich netto, zuzüglich der gesetzlichen Mehrwertsteuer.
+		Es gelten unsere Allgemeinen Geschäftsbedingungen, die Sie auf der letzten Seite unseres Angebots finden
+		{% if shop.url %}und/oder auf unserer Homepage {{ shop.url }}/agb einsehen können{% endif %}.
+	</p>
+
+	<p class="body-text">
+		{# TODO: Add your own conditions here, e.g. delivery tolerances, print data requirements etc. #}
+		Dieses Angebot wurde elektronisch erstellt und ist ohne Unterschrift gültig.
+		Die Gültigkeitsdauer beträgt 4 Wochen.
+	</p>
+
+	<p class="body-text">
+		Sie haben noch Fragen? Dann stehen wir Ihnen selbstverständlich gerne zur Verfügung:
+		{% if shop.address.phone %}Tel. {{ shop.address.phone }}{% endif %}
+		{% if shop.address.email %} oder per E-Mail unter {{ shop.address.email }}{% endif %}
+	</p>
+
+	<p class="body-text">Wir freuen uns auf Ihren Auftrag.</p>
+
+	<p class="body-text">
+		Mit freundlichen Grüßen<br/>
+		Ihr Team von {{ shop.address.name }}
+	</p>
+
+	{# ── Auftragserteilung ── #}
+	<p class="order-heading">AUFTRAGSERTEILUNG: <span style="font-weight: normal; font-size: 8.5pt;">(bitte mit Datum, Unterschrift und ggf. Stempel ausfüllen)</span></p>
+
+	<div class="order-box">Hiermit nehme ich das Angebot an und bestelle laut AGB rechtsverbindlich.</div>
+
+	<table class="sig-table">
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+	<table class="sig-table sig-label-row">
+		<tr>
+			<td>Datum</td>
+			<td>Unterschrift</td>
+			<td>ggf. Firmenstempel</td>
+		</tr>
+	</table>
+
+	<div class="doc-footer">
+		{{ shop.address.name }}
+		{% if shop.address.street %} &bull; {{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}{% endif %}
+		{% if shop.address.phone %} &bull; Tel.: {{ shop.address.phone }}{% endif %}
+		{% if shop.address.email %} &bull; {{ shop.address.email }}{% endif %}
+	</div>
+</div>
+
+
+{# ================================================================ #}
+{# PAGE 3 — Allgemeine Geschäftsbedingungen                        #}
+{# ================================================================ #}
+<div class="page">
+
+	<p class="agb-title">
+		Allgemeine Geschäftsbedingungen der Firma {{ shop.address.name }},
+		{{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}
+	</p>
+
+	<table class="agb-cols">
+		<tr>
+			<td>
+				<p class="agb-section-title">1. Leistungen und Geltungsbereich</p>
+				<p>{# TODO: Insert § 1 text here #}
+					Der Anbieter verkauft in seinem Online-Shop Waren an Unternehmen, Vereine oder sonstige Institutionen.
+					Die Leistungen des Anbieters erfolgen ausschließlich auf der Grundlage der nachfolgenden Allgemeinen Geschäftsbedingungen
+					in der zum Zeitpunkt der Bestellung gültigen Fassung.
+					Unsere Allgemeinen Geschäftsbedingungen gelten ausschließlich. Von unseren AGB abweichende AGB des Bestellers haben keine Gültigkeit,
+					es sei denn wir stimmen diesen ausdrücklich zu.
+				</p>
+
+				<p class="agb-section-title">2. Ausschluss von Verbrauchern</p>
+				<p>{# TODO: Insert § 2 text here #}
+					Wir schließen keine Verträge mit Verbrauchern / Privatpersonen.
+					Alle Preise auf der Webseite verstehen sich – vorbehaltlich abweichender Angaben – zzgl. gesetzlicher Mehrwertsteuer.
+				</p>
+
+				<p class="agb-section-title">3. Vertragsschluss</p>
+				<p>{# TODO: Insert § 3 text here #}
+					Unsere Angebote im Internet stellen eine unverbindliche Aufforderung an den Kunden dar, Waren zu bestellen.
+					Wir können die Annahme innerhalb von fünf Tagen erklären, indem wir eine schriftliche Auftragsbestätigung übermitteln
+					oder indem wir die bestellte Ware liefern.
+				</p>
+
+				<p class="agb-section-title">4. Zahlung, Verzug</p>
+				<p>{# TODO: Insert § 4 text here #}
+					Es gelten die zum Zeitpunkt der Bestellung auf unserer Website aufgeführten Preise.
+					Kommt der Besteller in Zahlungsverzug, sind wir berechtigt, Verzugszinsen in Höhe von fünf Prozentpunkten
+					über dem Basiszinssatz der EZB zu fordern.
+				</p>
+
+				<p class="agb-section-title">5. Eigentumsvorbehalt</p>
+				<p>{# TODO: Insert § 5 text here #}
+					Der Anbieter behält sich bis zur vollständigen Begleichung aller Forderungen aus einer laufenden
+					Geschäftsbeziehung das Eigentum an der gelieferten Ware vor.
+				</p>
+
+				<p class="agb-section-title">6. Lieferung</p>
+				<p>{# TODO: Insert § 6 text here #}
+					Die Lieferfristen sind der Webseite zu entnehmen.
+					Der Beginn der von uns angegebenen Lieferzeit setzt die rechtzeitige und ordnungsgemäße Erfüllung
+					der Verpflichtungen des Kunden voraus, insbesondere die korrekte Angabe der Lieferadresse.
+				</p>
+			</td>
+			<td>
+				<p class="agb-section-title">7. Annahmeverzug</p>
+				<p>{# TODO: Insert § 7 text here #}
+					Kommt der Kunde in Annahmeverzug oder verletzt er schuldhaft sonstige Mitwirkungspflichten,
+					so sind wir berechtigt, den uns hierdurch entstehenden Schaden einschließlich etwaiger Mehraufwendungen ersetzt zu verlangen.
+				</p>
+
+				<p class="agb-section-title">8. Gewährleistung</p>
+				<p>{# TODO: Insert § 8 text here #}
+					Ist die Kaufsache mangelhaft, gelten die Vorschriften der gesetzlichen Mängelhaftung.
+					Hiervon abweichend begründet ein unwesentlicher Mangel grundsätzlich keine Mängelansprüche;
+					hat der Anbieter die Wahl der Art der Nacherfüllung;
+					beträgt bei neuen Waren die Verjährungsfrist für Mängel ein Jahr ab Gefahrübergang.
+				</p>
+
+				<p class="agb-section-title">9. Haftung</p>
+				<p>{# TODO: Insert § 9 text here #}
+					Der Anbieter haftet dem Kunden aus allen vertraglichen, vertragsähnlichen und gesetzlichen
+					Ansprüchen auf Schadens- und Aufwendungsersatz nur bei Vorsatz oder grober Fahrlässigkeit
+					sowie bei Verletzung wesentlicher Vertragspflichten.
+					Im Übrigen ist eine Haftung des Anbieters ausgeschlossen.
+				</p>
+
+				<p class="agb-section-title">10. Schlussbestimmungen</p>
+				<p>{# TODO: Insert § 10 text here #}
+					Anwendbar ist das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts.
+					Ist der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches
+					Sondervermögen, ist das Gericht an unserem Sitz zuständig.
+					Soweit eine Bestimmung dieses Vertrages ungültig ist, bleiben die übrigen Bestimmungen unberührt.
+				</p>
+
+				<p style="font-size: 7.5pt; color: #888; margin-top: 10px;">
+					Seite 3 von 3
+				</p>
+			</td>
+		</tr>
+	</table>
+
+	<div class="agb-footer">
+		<table class="agb-footer-table">
+			<tr>
+				<td class="logo-cell" style="width: 12%;">
+					{% if shop.logoUrl %}
+						<img src="{{ shop.logoUrl }}" alt="{{ shop.address.name }}" />
+					{% endif %}
+				</td>
+				<td style="width: 25%;">
+					<strong>{{ shop.address.name }}</strong><br/>
+					{{ shop.address.street }}<br/>
+					{{ shop.address.zip }} {{ shop.address.city }}
+				</td>
+				<td style="width: 25%;">
+					{% if shop.address.phone %}Tel. {{ shop.address.phone }}<br/>{% endif %}
+					{% if shop.url %}Web {{ shop.url }}<br/>{% endif %}
+					{% if shop.address.email %}E-Mail {{ shop.address.email }}{% endif %}
+				</td>
+				<td style="width: 38%; font-size: 7pt; color: #999;">
+					{# TODO: Add bank details here, e.g.: #}
+					{# IBAN: DE00 0000 0000 0000 0000 00<br/>BIC: XXXXXXXXXX #}
+					Angebot freibleibend – Irrtümer und Zwischenverkauf bleiben vorbehalten.
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
 </body>
 </html>

@@ -41,6 +41,7 @@
             <argument type="service" id="HMnet\Configurator\Service\SetupFilmLineItemHandler" />
             <argument type="service" id="Psr\Log\LoggerInterface" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\Tax\TaxCalculator" />
+            <argument type="service" id="HMnet\Configurator\Service\ConfiguratorPriceService" />
         </service>
 
         <service id="HMnet\Configurator\Service\ConfiguratorLineItemHandler">
@@ -62,16 +63,33 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
-        <service id="HMnet\Configurator\Storefront\Controller\ConfiguratorPdfController" public="true" autowire="true" autoconfigure="true">
+        <service id="HMnet\Configurator\Service\ConfiguratorPriceService">
+            <argument type="service" id="product.repository" />
+            <argument type="service" id="hmnet_configurator_field.repository" />
+        </service>
+
+        <service id="HMnet\Configurator\Storefront\Controller\ConfiguratorPdfController" public="true">
             <argument type="service" id="product.repository" />
             <argument type="service" id="hmnet_configurator_field.repository" />
             <argument type="service" id="media.repository" />
             <argument type="service" id="language.repository" />
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="Shopware\Core\Checkout\Document\Service\PdfRenderer" />
+            <argument type="service" id="HMnet\Configurator\Service\ConfiguratorPriceService" />
+            <argument>%kernel.project_dir%</argument>
             <tag name="controller.service_arguments" />
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
         </service>
 
+        <service id="HMnet\Configurator\Storefront\Controller\ConfiguratorCalculateController" public="true">
+            <argument type="service" id="HMnet\Configurator\Service\ConfiguratorPriceService" />
+            <tag name="controller.service_arguments" />
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+        </service>
 
     </services>
 </container>

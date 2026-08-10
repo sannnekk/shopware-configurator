@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace HMnet\Configurator\Storefront\Controller;
 
-use HMnet\Configurator\Utils\FieldUtils;
+use HMnet\Configurator\Service\ConfiguratorPriceService;
 use Shopware\Core\Checkout\Document\Renderer\RenderedDocument;
 use Shopware\Core\Checkout\Document\Service\PdfRenderer;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Language\LanguageEntity;
@@ -33,7 +31,9 @@ class ConfiguratorPdfController extends StorefrontController
 		private readonly EntityRepository $mediaRepository,
 		private readonly EntityRepository $languageRepository,
 		private readonly SystemConfigService $systemConfigService,
-		private readonly PdfRenderer $pdfRenderer
+		private readonly PdfRenderer $pdfRenderer,
+		private readonly ConfiguratorPriceService $priceService,
+		private readonly string $projectDir = ''
 	) {}
 
 	#[Route(path: '/hmnet/configurator/pdf', name: 'frontend.hmnet.configurator.pdf', methods: ['POST'], defaults: ['_csrf_protected' => true])]
@@ -54,9 +54,14 @@ class ConfiguratorPdfController extends StorefrontController
 			return new JsonResponse(['message' => 'Produkt nicht gefunden.'], Response::HTTP_NOT_FOUND);
 		}
 
-		$fields = $this->fetchConfiguratorFields($productId, $salesChannelContext);
+		// Use the shared price service for calculations
+		$priceResult = $this->priceService->calculate($productId, $quantity, $selection, $salesChannelContext);
 
-		$priceData = $this->buildPriceBreakdown($product, $fields, $selection, $quantity, $salesChannelContext);
+		if (!$priceResult['success']) {
+			return new JsonResponse(['message' => 'Preisberechnung fehlgeschlagen.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+		}
+
+		$priceData = $this->buildPriceDataFromResult($priceResult);
 		$shop = $this->buildShopData($salesChannelContext);
 
 		$document = new RenderedDocument(number: 'ANG-' . date('Ymd-His'));
@@ -75,7 +80,7 @@ class ConfiguratorPdfController extends StorefrontController
 		$document->setParameters([
 			'shop' => $shop,
 			'product' => $product,
-			'quantity' => $quantity,
+			'quantity' => $priceResult['adjustedQuantity'] ?? $quantity,
 			'priceData' => $priceData,
 			'currencySymbol' => $salesChannelContext->getCurrency()->getSymbol(),
 			'generatedAt' => new \DateTimeImmutable(),
@@ -123,18 +128,6 @@ class ConfiguratorPdfController extends StorefrontController
 		return $this->productRepository->search($criteria, $context->getContext())->first();
 	}
 
-	private function fetchConfiguratorFields(string $productId, SalesChannelContext $context): array
-	{
-		$criteria = (new Criteria())
-			->addFilter(new EqualsFilter('productId', $productId))
-			->addAssociation('options.possibilities')
-			->addSorting(new \Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting('position'))
-			->addSorting(new \Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting('options.position'))
-			->addSorting(new \Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting('options.possibilities.position'));
-
-		return $this->configuratorFieldRepository->search($criteria, $context->getContext())->getElements();
-	}
-
 	private function buildOrderStub(string $salesChannelId, ?string $languageId, ?LanguageEntity $language): OrderEntity
 	{
 		$order = new OrderEntity();
@@ -147,114 +140,143 @@ class ConfiguratorPdfController extends StorefrontController
 		return $order;
 	}
 
-	private function buildPriceBreakdown(
-		ProductEntity $product,
-		array $fields,
-		array $selection,
-		int $quantity,
-		SalesChannelContext $context
-	): array {
-		$currencyId = $context->getCurrencyId();
-		$taxRate = (float) ($product->getTax()?->getTaxRate() ?? 0.0);
-
-		$productUnit = $this->getProductUnitPrice($product, $currencyId, $quantity);
-		$productTotal = $productUnit * $quantity;
-
+	/**
+	 * Convert the price service result to the format expected by the PDF template
+	 */
+	private function buildPriceDataFromResult(array $result): array
+	{
 		$optionLines = [];
+		foreach ($result['options'] as $option) {
+			$optionLines[] = [
+				'label' => $option['label'],
+				'unitNet' => $option['unitNet'],
+				'quantity' => $option['quantity'],
+				'totalNet' => $option['totalNet'],
+			];
+		}
+
 		$setupSurcharges = [];
 		$filmSurcharges = [];
-
-		foreach ($fields as $field) {
-			$fieldId = $field->id;
-			$possibilityId = $selection[$fieldId] ?? null;
-
-			if (!$possibilityId) {
-				continue;
-			}
-
-			[$option, $possibility] = FieldUtils::getOptionAndPossibility($field, $possibilityId);
-
-			if (!$option || !$possibility) {
-				continue;
-			}
-
-			$multiplicator = (float) ($possibility->multiplicator ?? 1.0);
-			$optionUnit = FieldUtils::getPriceFromTiers($option->priceTiers?->getTiers() ?? [], $quantity) * $multiplicator;
-			$optionTotal = $optionUnit * $quantity;
-
-			$optionLines[] = [
-				'label' => sprintf('%s: %s %s', $field->name, $option->name, $possibility->name),
-				'unitNet' => $optionUnit,
-				'quantity' => $quantity,
-				'totalNet' => $optionTotal,
-			];
-
-			$setupPrice = ((float) ($option->setupPrice ?? 0.0)) * $multiplicator;
-			$filmPrice = ((float) ($option->filmPrice ?? 0.0)) * $multiplicator;
-
-			if ($setupPrice > 0) {
+		foreach ($result['surcharges'] as $surcharge) {
+			if ($surcharge['type'] === 'setup') {
 				$setupSurcharges[] = [
-					'label' => sprintf('Einrichtung: %s %s', $option->name, $possibility->name),
-					'amount' => $setupPrice,
+					'label' => $surcharge['label'],
+					'amount' => $surcharge['amount'],
 				];
-			}
-
-			if ($filmPrice > 0) {
+			} elseif ($surcharge['type'] === 'film') {
 				$filmSurcharges[] = [
-					'label' => sprintf('Film: %s %s', $option->name, $possibility->name),
-					'amount' => $filmPrice,
+					'label' => $surcharge['label'],
+					'amount' => $surcharge['amount'],
 				];
 			}
 		}
 
-		$optionTotalNet = array_sum(array_column($optionLines, 'totalNet'));
-		$setupTotalNet = array_sum(array_column($setupSurcharges, 'amount'));
-		$filmTotalNet = array_sum(array_column($filmSurcharges, 'amount'));
-
-		$netTotal = $productTotal + $optionTotalNet + $setupTotalNet + $filmTotalNet;
-		$taxAmount = $netTotal * ($taxRate / 100);
-		$grossTotal = $netTotal + $taxAmount;
-
 		return [
-			'productUnit' => $productUnit,
-			'productTotal' => $productTotal,
+			'productUnit' => $result['product']['unitNet'],
+			'productTotal' => $result['product']['totalNet'],
 			'optionLines' => $optionLines,
 			'setupSurcharges' => $setupSurcharges,
 			'filmSurcharges' => $filmSurcharges,
-			'optionTotal' => $optionTotalNet,
-			'setupTotal' => $setupTotalNet,
-			'filmTotal' => $filmTotalNet,
-			'netTotal' => $netTotal,
-			'taxAmount' => $taxAmount,
-			'grossTotal' => $grossTotal,
-			'taxRate' => $taxRate,
+			'optionTotal' => array_sum(array_column($optionLines, 'totalNet')),
+			'setupTotal' => array_sum(array_column($setupSurcharges, 'amount')),
+			'filmTotal' => array_sum(array_column($filmSurcharges, 'amount')),
+			'netTotal' => $result['totals']['netTotal'],
+			'taxAmount' => $result['totals']['taxAmount'],
+			'grossTotal' => $result['totals']['grossTotal'],
+			'taxRate' => $result['totals']['taxRate'],
 		];
 	}
 
-	private function getProductUnitPrice(ProductEntity $product, string $currencyId, int $quantity): float
+	private function mediaToDataUri(string $url): string
 	{
-		$prices = $product->getPrices();
-
-		if ($prices) {
-			foreach ($prices as $priceRule) {
-				$start = $priceRule->getQuantityStart();
-				$end = $priceRule->getQuantityEnd();
-				$matchesQuantity = ($start === null || $quantity >= $start) && ($end === null || $quantity <= $end);
-
-				if (!$matchesQuantity) {
-					continue;
+		// Strategy 1: read from local filesystem (reliable, no network needed)
+		if ($this->projectDir !== '') {
+			$path = parse_url($url, PHP_URL_PATH);
+			if (\is_string($path) && $path !== '') {
+				$localPath = rtrim($this->projectDir, '/') . '/public' . $path;
+				if (is_file($localPath) && is_readable($localPath)) {
+					$mime = mime_content_type($localPath) ?: 'image/octet-stream';
+					$data = file_get_contents($localPath);
+					if ($data !== false) {
+						return 'data:' . $mime . ';base64,' . base64_encode($data);
+					}
 				}
-
-				$price = $priceRule->getPrice()->getCurrencyPrice($currencyId, false) ?? $priceRule->getPrice()->first();
-
-				return (float) ($price?->getNet() ?? 0.0);
 			}
 		}
 
-		$basePrice = $product->getPrice();
-		$price = $basePrice?->getCurrencyPrice($currencyId, true) ?? $basePrice?->first();
+		// Strategy 2: HTTP fetch (handles CDN URLs or mismatched APP_URL)
+		$ctx = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+		$data = @file_get_contents($url, false, $ctx);
+		if ($data !== false && \strlen($data) > 64) {
+			$finfo = new \finfo(\FILEINFO_MIME_TYPE);
+			$mime = $finfo->buffer($data) ?: 'image/octet-stream';
+			return 'data:' . $mime . ';base64,' . base64_encode($data);
+		}
 
-		return (float) ($price?->getNet() ?? 0.0);
+		return $url;
+	}
+
+	private function findFallbackLogoDataUri(): ?string
+	{
+		if ($this->projectDir === '') {
+			return null;
+		}
+
+		$mediaDir = rtrim($this->projectDir, '/') . '/public/media';
+		$best = null;
+		$bestScore = -1;
+
+		$iterator = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator($mediaDir, \FilesystemIterator::SKIP_DOTS),
+			\RecursiveIteratorIterator::LEAVES_ONLY
+		);
+
+		foreach ($iterator as $file) {
+			/** @var \SplFileInfo $file */
+			if (!$file->isFile()) {
+				continue;
+			}
+
+			$name = strtolower($file->getFilename());
+
+			// Must be an image with "logo" in the name
+			if (!str_contains($name, 'logo')) {
+				continue;
+			}
+			if (!preg_match('/\.(svg|png|jpg|jpeg|gif|webp)$/i', $name)) {
+				continue;
+			}
+
+			// Skip obvious product logo files (contain dimension strings or product keywords)
+			if (preg_match('/\d{3,4}x\d{3,4}|kugelschreiber|stift|usb|pen_|_pen|_ds|_gum|_mr_|_tf_/i', $name)) {
+				continue;
+			}
+
+			$size = $file->getSize();
+			// Skip very large files — shop logos are compact
+			if ($size > 150000) {
+				continue;
+			}
+
+			// Score: prefer SVG, prefer smaller files
+			$score = str_ends_with($name, '.svg') ? 20 : 5;
+			$score -= (int) ($size / 5000);
+
+			if ($score > $bestScore) {
+				$bestScore = $score;
+				$best = $file->getPathname();
+			}
+		}
+
+		if ($best !== null) {
+			$mime = mime_content_type($best) ?: 'image/png';
+			$data = file_get_contents($best);
+			if ($data !== false) {
+				return 'data:' . $mime . ';base64,' . base64_encode($data);
+			}
+		}
+
+		return null;
 	}
 
 	private function buildShopData(SalesChannelContext $context): array
@@ -274,7 +296,14 @@ class ConfiguratorPdfController extends StorefrontController
 
 		if (\is_string($logoId) && $logoId !== '') {
 			$logo = $this->mediaRepository->search(new Criteria([$logoId]), $context->getContext())->first();
-			$logoUrl = $logo?->getUrl();
+			if ($logo !== null) {
+				$logoUrl = $this->mediaToDataUri($logo->getUrl());
+			}
+		}
+
+		// Fallback: scan media directory for any file with "logo" in the name
+		if ($logoUrl === null) {
+			$logoUrl = $this->findFallbackLogoDataUri();
 		}
 
 		return [

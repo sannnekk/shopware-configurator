@@ -46,7 +46,10 @@
 			"price": {
 				"quantityStartLabel": "From",
 				"quantityEndLabel": "To",
-				"regenerateTiers": "Regenerate tiers"
+				"priceLabel": "Price",
+				"regenerateTiers": "Regenerate tiers",
+				"addTier": "Add tier",
+				"noTiers": "No price tiers defined"
 			},
 			"removeField": "Remove field"
 		}

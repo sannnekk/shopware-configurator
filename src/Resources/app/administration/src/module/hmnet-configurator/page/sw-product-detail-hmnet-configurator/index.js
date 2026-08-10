@@ -194,9 +194,29 @@ Component.register('sw-product-detail-hmnet-configurator', {
 			newOption.position = field.options.length ? field.options.length + 1 : 1
 			newOption.name = ''
 			newOption.possibilities = this.createEmptyPossibilityCollection()
-			newOption.priceTiers = this.getEmptyPriceTiers()
+			newOption.priceTiers = this.getDefaultPriceTiers()
 
 			field.options.add(newOption)
+		},
+
+		getDefaultPriceTiers() {
+			// If product has price tiers, use them as the default structure
+			if (this.productPriceTiers.length > 0) {
+				return this.productPriceTiers.map((tier) => ({
+					quantityStart: tier.quantityStart,
+					quantityEnd: tier.quantityEnd,
+					price: 0.0,
+				}))
+			}
+
+			// Otherwise create a single default tier
+			return [
+				{
+					quantityStart: 1,
+					quantityEnd: null,
+					price: 0.0,
+				},
+			]
 		},
 
 		getEmptyPriceTiers() {

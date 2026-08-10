@@ -46,7 +46,10 @@
 			"price": {
 				"quantityStartLabel": "Ab",
 				"quantityEndLabel": "Bis",
-				"regenerateTiers": "Steffelung aktualisieren"
+				"priceLabel": "Preis",
+				"regenerateTiers": "Staffelung aktualisieren",
+				"addTier": "Staffel hinzufügen",
+				"noTiers": "Keine Preisstaffeln definiert"
 			},
 			"removeField": "Feld löschen"
 		}

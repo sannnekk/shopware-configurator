@@ -11,6 +11,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use HMnet\Configurator\Core\Content\Configurator\ConfiguratorFieldEntity;
 use HMnet\Configurator\Service\ConfiguratorLineItemHandler;
+use HMnet\Configurator\Service\ConfiguratorPriceService;
 use HMnet\Configurator\Service\SetupFilmLineItemHandler;
 use HMnet\Configurator\Utils\FieldUtils;
 use HMnet\Configurator\Utils\PriceUtils;
@@ -31,12 +32,20 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 
 	private TaxCalculator $taxCalculator;
 
-	public function __construct(ConfiguratorLineItemHandler $configuratorFactory, SetupFilmLineItemHandler $setupFilmFactory, LoggerInterface $logger, TaxCalculator $taxCalculator)
-	{
+	private ConfiguratorPriceService $priceService;
+
+	public function __construct(
+		ConfiguratorLineItemHandler $configuratorFactory,
+		SetupFilmLineItemHandler $setupFilmFactory,
+		LoggerInterface $logger,
+		TaxCalculator $taxCalculator,
+		ConfiguratorPriceService $priceService
+	) {
 		$this->configuratorFactory = $configuratorFactory;
 		$this->setupFilmFactory = $setupFilmFactory;
 		$this->logger = $logger;
 		$this->taxCalculator = $taxCalculator;
+		$this->priceService = $priceService;
 	}
 
 	public function process(
@@ -46,10 +55,47 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 		SalesChannelContext $context,
 		CartBehavior $behavior
 	): void {
+		$this->enforceMinimumQuantities($data, $toCalculate, $context);
 		$this->addChildrenToCart($data, $toCalculate, $context);
 		$this->adjustChildQuantities($toCalculate);
 		$this->adjustChildPrices($toCalculate, $context);
 		$this->addSetupAndFilmPrices($toCalculate, $context);
+	}
+
+	/**
+	 * Enforce minimum quantities based on selected options' price tiers
+	 */
+	private function enforceMinimumQuantities(CartDataCollection $data, Cart $toCalculate, SalesChannelContext $context): void
+	{
+		foreach ($toCalculate->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE) as $lineItem) {
+			$lineItemData = $data->get($lineItem->getId());
+
+			if (!$lineItemData) {
+				continue;
+			}
+
+			[$payload, $fieldEntities] = $lineItemData;
+
+			if (!$fieldEntities || !($fieldEntities instanceof EntityCollection) || $fieldEntities->count() === 0) {
+				continue;
+			}
+
+			$currentQuantity = $lineItem->getQuantity();
+			$minQuantityResult = $this->priceService->determineMinimumQuantity(
+				$fieldEntities->getElements(),
+				$payload,
+				$currentQuantity
+			);
+
+			if ($minQuantityResult['adjusted'] && $minQuantityResult['effectiveQuantity'] > $currentQuantity) {
+				$lineItem->setQuantity($minQuantityResult['effectiveQuantity']);
+
+				// Store hint in payload for potential display
+				if ($minQuantityResult['hint']) {
+					$lineItem->setPayloadValue('hmnetMinimumQuantityHint', $minQuantityResult['hint']);
+				}
+			}
+		}
 	}
 
 	/**
@@ -58,7 +104,13 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 	private function addChildrenToCart(CartDataCollection $data, Cart $toCalculate, SalesChannelContext $context): void
 	{
 		foreach ($toCalculate->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE) as $lineItem) {
-			[$payload, $fieldEntities] = $data->get($lineItem->getId());
+			$lineItemData = $data->get($lineItem->getId());
+
+			if (!$lineItemData) {
+				continue;
+			}
+
+			[$payload, $fieldEntities] = $lineItemData;
 
 			if (!$fieldEntities) {
 				continue;

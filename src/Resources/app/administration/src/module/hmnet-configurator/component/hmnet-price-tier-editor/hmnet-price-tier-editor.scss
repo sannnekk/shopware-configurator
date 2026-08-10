@@ -1,0 +1,76 @@
+.hmnet-price-tier-editor {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+
+	&__tier {
+		display: flex;
+		align-items: flex-end;
+		gap: 8px;
+		padding: 8px;
+		background-color: var(--color-gray-50);
+		border-radius: 4px;
+	}
+
+	&__tier-range {
+		display: flex;
+		align-items: flex-end;
+		gap: 8px;
+	}
+
+	&__tier-separator {
+		padding-bottom: 8px;
+		color: var(--color-text-secondary);
+	}
+
+	&__tier-end {
+		min-width: 100px;
+
+		&--infinity {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+
+			label {
+				font-size: 12px;
+				color: var(--color-text-secondary);
+			}
+
+			span {
+				font-size: 14px;
+				padding: 6px 0;
+			}
+		}
+	}
+
+	&__tier-price {
+		min-width: 120px;
+	}
+
+	&__tier-actions {
+		padding-bottom: 4px;
+	}
+
+	&__no-tiers {
+		padding: 12px;
+		text-align: center;
+		color: var(--color-text-secondary);
+		font-style: italic;
+	}
+
+	&__add-tier {
+		margin-top: 4px;
+	}
+
+	// Ensure inputs have adequate width
+	.hmnet-editable-field {
+		min-width: 100px;
+
+		&__editable {
+			.mt-field,
+			.sw-field {
+				min-width: 100px;
+			}
+		}
+	}
+}

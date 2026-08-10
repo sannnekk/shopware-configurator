@@ -3,6 +3,14 @@
 	flex-direction: column;
 	gap: 1rem;
 
+	&__hint {
+		margin-bottom: 0;
+		padding: 0.75rem 1rem;
+		font-size: 0.875rem;
+		border-radius: 4px;
+		animation: hmnet-hint-fade-in 0.3s ease;
+	}
+
 	&__tax-warning {
 		font-size: 0.875rem;
 		margin: 0;
@@ -237,6 +245,47 @@
 	background: var(--bs-gray-100);
 	border-radius: 6px;
 
+	&--confirm {
+		margin-top: 0.5rem;
+		padding: 0;
+		background: transparent;
+		border-radius: 0;
+
+		.hmnet-configurator-children__title {
+			margin-bottom: 0.25rem;
+		}
+
+		.hmnet-configurator-children__list {
+			gap: 0.125rem;
+		}
+
+		.hmnet-configurator-children__item {
+			grid-template-columns: minmax(0, 1fr) minmax(5.5rem, auto) 3rem minmax(5.5rem, auto);
+			font-size: 0.8125rem;
+			align-items: center;
+		}
+
+		.hmnet-configurator-children__name {
+			min-width: 0;
+		}
+
+		.hmnet-configurator-children__unit-price,
+		.hmnet-configurator-children__quantity,
+		.hmnet-configurator-children__price {
+			justify-self: end;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.hmnet-configurator-children__name--setup-film {
+			grid-column: 1 / 4;
+		}
+
+		.hmnet-configurator-children__item.nested-item {
+			padding-left: 0.75rem;
+			font-size: 0.75rem;
+		}
+	}
+
 	&__header {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
@@ -378,7 +427,7 @@
 			margin-top: 0;
 			margin-bottom: 0;
 
-			.line-item-quantity-label {
+			.line-item-quantity-label { 
 				width: unset;
 				margin-bottom: 0;
 				font-size: 0.875rem;
@@ -419,6 +468,75 @@
 	}
 }
 
+.hmnet-configurator-confirm-variants {
+	margin-top: $spacer-sm;
+}
+
+.hmnet-configurator-confirm-row {
+	font-size: $font-size-sm;
+	background: rgba($gray-100, 0.65);
+	padding-left: 2em;
+
+	.line-item-row {
+		margin-bottom: 0;
+		align-items: flex-start;
+	}
+
+	.line-item-info {
+		display: flex;
+		align-items: flex-start;
+
+		.line-item-details,
+		.line-item-details-container {
+			margin-bottom: 0;
+		}
+	}
+
+	.line-item-quantity,
+	.line-item-unit-price,
+	.line-item-tax-price,
+	.line-item-total-price {
+		display: flex;
+		align-items: flex-start;
+		justify-content: flex-end;
+		text-align: right;
+		padding-top: 1px;
+	}
+
+	&__name {
+		font-size: $font-size-sm;
+	}
+
+	&__value {
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+}
+
+.hmnet-configurator-confirm-row--title {
+	background: transparent;
+	border-left: 0;
+	padding-left: 0;
+
+	.line-item-product-number {
+		font-weight: $font-weight-bold;
+		color: $text-muted;
+		margin-bottom: 0;
+	}
+}
+
+.hmnet-configurator-confirm-row--setup {
+	background: rgba($gray-200, 0.55);
+}
+
+.hmnet-configurator-confirm-row--nested {
+	.hmnet-configurator-confirm-row__name {
+		padding-left: 3em;
+		font-size: 1em; //$font-size-xs;
+		color: $text-muted;
+	}
+}
+
 @keyframes hmnet-configurator-spinner {
 	from {
 		transform: rotate(0deg);
@@ -426,6 +544,18 @@
 
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+@keyframes hmnet-hint-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }
 
