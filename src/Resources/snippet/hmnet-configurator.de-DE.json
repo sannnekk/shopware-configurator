@@ -21,12 +21,14 @@
       "calculating": "Preise werden aktualisiert ..."
     },
     "cart": {
-      "optionsTitle": "Ausgewählte Optionen",
-      "setupFilmTitle": "Einrichtungs- & Filmkosten",
-      "baseTitle": "Produkt",
-      "quantityLabel": "Menge",
-      "priceLabel": "Produktpreis",
-      "unitPriceLabel": "Stückpreis"
+      "configurationTitle": "Konfiguration",
+      "configurationCount": "Gewählte Optionen: %count%",
+      "configurationTotal": "Gesamt",
+      "basePrice": "Grundpreis",
+      "setupCosts": "Einrichtungspreis",
+      "filmCosts": "Filmpreis",
+      "oneTime": "einmalig",
+      "included": "inklusive"
     }
   }
 }

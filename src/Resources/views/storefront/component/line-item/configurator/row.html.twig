@@ -1,0 +1,54 @@
+{#
+    One row of the configuration breakdown.
+
+    All three cells are always rendered so that rows stay aligned in the grid.
+
+    @var caption    string|null  small line above the value, e.g. the configurator field name
+    @var value      string       label of the row
+    @var unitPrice  float|null   per-piece price, only shown for quantities above one
+    @var quantity   int|null
+    @var note       string|null  alternative to the unit price, e.g. "one-time"
+    @var price      float|null   amount of this row, `null` leaves the price cell empty
+    @var currencyIso string|null
+    @var modifier   string|null  BEM modifier, e.g. 'base', 'option', 'group', 'position', 'total'
+#}
+
+{% block hmnet_configurator_row %}
+    <li class="hmnet-config-row{% if modifier is defined and modifier %} hmnet-config-row--{{ modifier }}{% endif %}">
+        {% block hmnet_configurator_row_label %}
+            <div class="hmnet-config-row__label">
+                {% if caption is defined and caption %}
+                    <span class="hmnet-config-row__caption">{{ caption|sw_sanitize }}</span>
+                {% endif %}
+                <span class="hmnet-config-row__value">{{ value|sw_sanitize }}</span>
+            </div>
+        {% endblock %}
+
+        {% block hmnet_configurator_row_meta %}
+            <div class="hmnet-config-row__meta">
+                {% if note is defined and note %}
+                    {{ note|sw_sanitize }}
+                {% elseif unitPrice is defined and unitPrice is not null and quantity|default(1) > 1 %}
+                    {{ unitPrice|currency(currencyIso) }}
+                    <span aria-hidden="true">&times;</span>
+                    <span class="visually-hidden">{{ 'checkout.cartHeaderQuantity'|trans|sw_sanitize }}</span>
+                    {{ quantity }}
+                {% endif %}
+            </div>
+        {% endblock %}
+
+        {% block hmnet_configurator_row_price %}
+            <div class="hmnet-config-row__price">
+                {% if price is defined and price is not null %}
+                    {% if price > 0 or modifier|default('') == 'total' %}
+                        {{ price|currency(currencyIso) }}
+                    {% else %}
+                        <span class="hmnet-config-row__included">
+                            {{ 'hmnet-configurator.cart.included'|trans|sw_sanitize }}
+                        </span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endblock %}
+    </li>
+{% endblock %}

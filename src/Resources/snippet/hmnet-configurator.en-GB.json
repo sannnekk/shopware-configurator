@@ -2,7 +2,7 @@
   "hmnet-configurator": {
     "taxWarning": {
       "title": "Not supported",
-      "message": "The product configurator only supports net prices. Please switch your shop's tax status to \"Net\" to use the configurator."
+      "message": "The product configurator only supports net prices. Please switch the tax status of your shop to \"net\" to use the configurator."
     },
     "select": {
       "defaultLabel": "Please select"
@@ -21,12 +21,14 @@
       "calculating": "Updating prices ..."
     },
     "cart": {
-      "optionsTitle": "Selected options",
-      "setupFilmTitle": "Setup and film costs",
-      "baseTitle": "Product",
-      "quantityLabel": "Quantity",
-      "priceLabel": "Product price",
-      "unitPriceLabel": "Unit price"
+      "configurationTitle": "Configuration",
+      "configurationCount": "Selected options: %count%",
+      "configurationTotal": "Total",
+      "basePrice": "Base price",
+      "setupCosts": "Setup price",
+      "filmCosts": "Film price",
+      "oneTime": "one-time",
+      "included": "included"
     }
   }
 }

@@ -43,8 +43,14 @@ class SetupFilmLineItemHandler implements LineItemFactoryInterface
 		$lineItem->setStackable(true);
 		$lineItem->setRemovable(false);
 		$lineItem->setPayload([
+			// The persisted label stays untranslated for documents and the administration.
+			// The storefront uses this discriminator to render a translated heading instead.
+			"costType" => $type,
 			"positions" => array_map(fn(LineItem $item) => [
 				"label" => $item->getLabel(),
+				"fieldName" => $item->getPayloadValue('fieldName'),
+				"optionName" => $item->getPayloadValue('optionName'),
+				"possibilityName" => $item->getPayloadValue('possibilityName'),
 				"price" => ($item->getPayloadValue($type === 'setup' ? 'setupPrice' : 'filmPrice') ?? 0.0) * ($item->getPayloadValue('multiplicator') ?? 1.0),
 			], $lineItems),
 		]);
@@ -70,11 +76,14 @@ class SetupFilmLineItemHandler implements LineItemFactoryInterface
 	}
 
 	/**
-	 * Gets label based on type
+	 * Gets label based on type.
+	 *
+	 * This label is persisted on the order and used by documents and the administration.
+	 * The storefront renders the translated `hmnet-configurator.cart.*Costs` snippet instead.
 	 */
 	private function getLabel(string $type): string
 	{
-		return $type === 'setup' ? 'Setup Price' : 'Film Price';
+		return $type === 'setup' ? 'Einrichtungspreis' : 'Filmpreis';
 	}
 
 	private function getPrice(array $lineItems, string $type): float

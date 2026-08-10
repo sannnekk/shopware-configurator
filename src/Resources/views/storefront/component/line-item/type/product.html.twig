@@ -1,94 +1,44 @@
 {% sw_extends '@Storefront/storefront/component/line-item/type/product.html.twig' %}
 
-{% set configuratorChildren = lineItem.children.filterType('hmnet-configurator') %}
-{% set setupFilmChildren = lineItem.children.filterType('hmnet-configurator-setup-film') %}
-{% set hasConfiguratorChildren = configuratorChildren|length > 0 %}
-{% set currentRoute = activeRoute|default(app.request.attributes.get('_route')|default('')) %}
-{% set isCheckoutConfirmRoute = currentRoute is same as('frontend.checkout.confirm.page') %}
-{% set useConfiguratorCardLayout = hasConfiguratorChildren and not isCheckoutConfirmRoute %}
+{#
+    Products configured with the HMnet configurator carry their chosen options as child line
+    items. Their prices are already folded into the parent price by the cart processor, so the
+    children must not be rendered as separate line items. Instead the whole configuration is
+    shown as one breakdown panel below the regular product row - identical on the cart page,
+    the off-canvas cart, the confirm page and in the order history.
 
-{% block component_line_item_type_product_details_container %}
-	{{ parent() }}
+    Filtering runs on `children.elements` so that it works for both `LineItemCollection` (cart)
+    and `OrderLineItemCollection` (order), which do not share a common filter method. Using the
+    plain array also keeps `filter` returning an array instead of a single-use generator.
+#}
 
-	{% if hasConfiguratorChildren and not isCheckoutConfirmRoute %}
-			{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator-children.html.twig' with {
-				children: configuratorChildren,
-				setupFilmChildren: setupFilmChildren,
-				parentLineItem: lineItem,
-				displayMode: displayMode|default('default'),
-				order: order|default(null),
-				context: context,
-				activeRoute: activeRoute|default(null),
-				redirectTo: redirectTo|default(null),
-				formAction: formAction|default(null)
-			} only %}
-	{% endif %}
+{% set hmnetOptionType = constant('HMnet\\Configurator\\Service\\ConfiguratorLineItemHandler::TYPE') %}
+{% set hmnetSurchargeType = constant('HMnet\\Configurator\\Service\\SetupFilmLineItemHandler::TYPE') %}
+
+{% set hmnetChildren = lineItem.children ? lineItem.children.elements : [] %}
+{% set hmnetOptions = hmnetChildren|filter(child => child.type == hmnetOptionType) %}
+{% set hmnetSurcharges = hmnetChildren|filter(child => child.type == hmnetSurchargeType) %}
+{% set hmnetIsConfigured = hmnetOptions|length > 0 %}
+
+{% block component_line_item_type_product_inner %}
+    {{ parent() }}
+
+    {% if hmnetIsConfigured %}
+        {% block hmnet_configurator_line_item_summary %}
+            {% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/summary.html.twig' with {
+                lineItem: lineItem,
+                options: hmnetOptions,
+                surcharges: hmnetSurcharges,
+                displayMode: displayMode|default('default'),
+                context: context
+            } only %}
+        {% endblock %}
+    {% endif %}
 {% endblock %}
 
-{% block component_line_item_type_product %}
-	{{ parent() }}
-
-	{% if hasConfiguratorChildren and isCheckoutConfirmRoute %}
-		{% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator-children-confirm.html.twig' with {
-			children: configuratorChildren,
-			setupFilmChildren: setupFilmChildren,
-			currencyIso: context.currency.isoCode,
-			showTaxPrice: showTaxPrice|default(false),
-			showSubtotal: showSubtotal|default(true)
-		} only %}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_image %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_label %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_number %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_delivery_date %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_col_remove %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_col_quantity %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_col_unit_price %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_col_total_price %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
-{% endblock %}
-
-{% block component_line_item_type_product_wishlist %}
-	{% if not useConfiguratorCardLayout %}
-		{{ parent() }}
-	{% endif %}
+{# The summary panel replaces the generic "this item contains" accordion. #}
+{% block component_line_item_type_product_children %}
+    {% if not hmnetIsConfigured %}
+        {{ parent() }}
+    {% endif %}
 {% endblock %}

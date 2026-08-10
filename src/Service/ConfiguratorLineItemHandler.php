@@ -32,12 +32,15 @@ class ConfiguratorLineItemHandler implements LineItemFactoryInterface
 		$lineItem->setStackable(true);
 		$lineItem->setRemovable(false);
 		$lineItem->setQuantity($data['quantity'] ?? 1);
-		$lineItem->setPayload([
-			"priceTiers" => $this->getPriceTiers($fieldEntity, $possibilityId),
-			"multiplicator" => $this->getMultiplicator($fieldEntity, $possibilityId),
-			"setupPrice" => $setupPrice,
-			"filmPrice" => $filmPrice
-		]);
+		$lineItem->setPayload(array_merge(
+			$this->getLabelParts($fieldEntity, $possibilityId),
+			[
+				"priceTiers" => $this->getPriceTiers($fieldEntity, $possibilityId),
+				"multiplicator" => $this->getMultiplicator($fieldEntity, $possibilityId),
+				"setupPrice" => $setupPrice,
+				"filmPrice" => $filmPrice
+			]
+		));
 
 		return $lineItem;
 	}
@@ -56,6 +59,24 @@ class ConfiguratorLineItemHandler implements LineItemFactoryInterface
 		}
 
 		return '---';
+	}
+
+	/**
+	 * The single-string label is kept for documents and the administration, but the storefront
+	 * renders the field name and the chosen value separately. Exposing the parts here avoids
+	 * parsing the label back apart in Twig.
+	 *
+	 * @return array{fieldName: string|null, optionName: string|null, possibilityName: string|null}
+	 */
+	private function getLabelParts(Entity $fieldEntity, string $possibilityId): array
+	{
+		[$option, $possibility] = FieldUtils::getOptionAndPossibility($fieldEntity, $possibilityId);
+
+		return [
+			'fieldName' => $fieldEntity->name,
+			'optionName' => $option?->name,
+			'possibilityName' => $possibility?->name,
+		];
 	}
 
 	private function getPriceTiers(Entity $fieldEntity, string $possibilityId): array

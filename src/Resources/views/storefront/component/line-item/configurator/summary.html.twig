@@ -1,0 +1,129 @@
+{#
+    Price breakdown of a configured product line item.
+
+    The rows add up to the line item total: base price + one row per chosen option
+    + the one-off setup and film costs.
+
+    @var lineItem    LineItem|OrderLineItemEntity  the configured product
+    @var options     array                         `hmnet-configurator` children
+    @var surcharges  array                         `hmnet-configurator-setup-film` children
+    @var displayMode string                        'default' | 'offcanvas' | 'order'
+    @var context     SalesChannelContext
+#}
+
+{% set currencyIso = (lineItem.order is defined and lineItem.order) ? lineItem.order.currency.isoCode : context.currency.isoCode %}
+{% set quantity = lineItem.quantity ?: 1 %}
+{% set lineTotal = lineItem.price ? lineItem.price.totalPrice : null %}
+
+{# Only setup/film groups that actually cost something are worth showing. #}
+{% set surcharges = surcharges|filter(surcharge => surcharge.price and surcharge.price.totalPrice > 0) %}
+
+{% set basePrice = lineItem.payload.hmnetConfiguratorBasePrice|default(null) %}
+{% set baseTotal = null %}
+{% set baseUnit = null %}
+
+{% if basePrice.total is defined and basePrice.total is not null %}
+    {% set baseTotal = basePrice.total %}
+    {% set baseUnit = basePrice.unit|default(null) %}
+{% elseif lineTotal is not null %}
+    {# Orders created before the base price was stored in the payload: derive it. #}
+    {% set surchargeTotal = surcharges|reduce((carry, surcharge) => carry + surcharge.price.totalPrice, 0) %}
+    {% set optionTotal = options|reduce((carry, option) => carry + (option.price ? option.price.totalPrice : 0), 0) %}
+    {% set baseTotal = lineTotal - optionTotal - surchargeTotal %}
+    {% set baseUnit = baseTotal / quantity %}
+{% endif %}
+
+{% set isCollapsible = displayMode == 'offcanvas' %}
+{% set panelId = 'hmnet-config-' ~ displayMode ~ '-' ~ lineItem.id %}
+
+{% block hmnet_configurator_summary %}
+    <details class="hmnet-config" id="{{ panelId }}"{% if not isCollapsible %} open{% endif %}>
+        {% block hmnet_configurator_summary_header %}
+            <summary class="hmnet-config__header">
+                <span class="hmnet-config__title">
+                    {{ 'hmnet-configurator.cart.configurationTitle'|trans|sw_sanitize }}
+                </span>
+                <span class="hmnet-config__count" aria-hidden="true">{{ options|length }}</span>
+                <span class="visually-hidden">
+                    {{ 'hmnet-configurator.cart.configurationCount'|trans({ '%count%': options|length })|sw_sanitize }}
+                </span>
+                {% block hmnet_configurator_summary_header_icon %}
+                    <span class="hmnet-config__chevron">
+                        {% sw_icon 'arrow-medium-down' style { size: 'xs' } %}
+                    </span>
+                {% endblock %}
+            </summary>
+        {% endblock %}
+
+        {% block hmnet_configurator_summary_body %}
+            <ul class="hmnet-config__list">
+                {% block hmnet_configurator_summary_base %}
+                    {% if baseTotal is not null %}
+                        {% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/row.html.twig' with {
+                            value: 'hmnet-configurator.cart.basePrice'|trans,
+                            unitPrice: baseUnit,
+                            quantity: quantity,
+                            price: baseTotal,
+                            currencyIso: currencyIso,
+                            modifier: 'base'
+                        } only %}
+                    {% endif %}
+                {% endblock %}
+
+                {% block hmnet_configurator_summary_options %}
+                    {% for option in options %}
+                        {% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/row.html.twig' with {
+                            caption: option.payload.fieldName|default(null),
+                            value: option.payload.optionName|default(null)
+                                ? (option.payload.optionName ~ ' ' ~ option.payload.possibilityName|default(''))|trim
+                                : option.label,
+                            unitPrice: option.price ? option.price.unitPrice : null,
+                            quantity: option.quantity|default(quantity),
+                            price: option.price ? option.price.totalPrice : null,
+                            currencyIso: currencyIso,
+                            modifier: 'option'
+                        } only %}
+                    {% endfor %}
+                {% endblock %}
+
+                {% block hmnet_configurator_summary_surcharges %}
+                    {% for surcharge in surcharges %}
+                        {% set costType = surcharge.payload.costType|default(null) %}
+                        {% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/row.html.twig' with {
+                            value: costType
+                                ? ('hmnet-configurator.cart.' ~ costType ~ 'Costs')|trans
+                                : surcharge.label,
+                            note: 'hmnet-configurator.cart.oneTime'|trans,
+                            price: surcharge.price.totalPrice,
+                            currencyIso: currencyIso,
+                            modifier: 'group'
+                        } only %}
+
+                        {% for position in surcharge.payload.positions|default([]) %}
+                            {% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/row.html.twig' with {
+                                caption: position.fieldName|default(null),
+                                value: position.optionName|default(null)
+                                    ? (position.optionName ~ ' ' ~ position.possibilityName|default(''))|trim
+                                    : position.label|default(''),
+                                price: position.price|default(null),
+                                currencyIso: currencyIso,
+                                modifier: 'position'
+                            } only %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endblock %}
+
+                {% block hmnet_configurator_summary_total %}
+                    {% if lineTotal is not null %}
+                        {% sw_include '@HMnetConfigurator/storefront/component/line-item/configurator/row.html.twig' with {
+                            value: 'hmnet-configurator.cart.configurationTotal'|trans,
+                            price: lineTotal,
+                            currencyIso: currencyIso,
+                            modifier: 'total'
+                        } only %}
+                    {% endif %}
+                {% endblock %}
+            </ul>
+        {% endblock %}
+    </details>
+{% endblock %}
