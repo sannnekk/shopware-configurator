@@ -20,6 +20,12 @@
 			position: relative;
 		}
 
+		/* The AGB page packs a lot of small print — give it more usable area
+		   than the letter pages so the two columns fit on a single page. */
+		.page-tight {
+			padding: 8mm 10mm 8mm 10mm;
+		}
+
 		.page-break { page-break-after: always; }
 
 		/* ── DIN-header table ── */
@@ -108,12 +114,6 @@
 			line-height: 1.6;
 		}
 
-		/* ── Article header line ── */
-		.article-line {
-			font-size: 9pt;
-			margin-bottom: 10px;
-		}
-
 		/* ── Positions table ── */
 		.pos-table {
 			width: 100%;
@@ -169,17 +169,18 @@
 			text-decoration: underline;
 		}
 
-		/* ── Page footer ── */
-		.doc-footer {
-			position: absolute;
-			bottom: 8mm;
-			left: 18mm;
-			right: 18mm;
-			border-top: 1px solid #ccc;
-			padding-top: 4px;
-			font-size: 7pt;
-			color: #aaa;
-			text-align: center;
+		/* ── Article line (product number/name + product photo) ── */
+		.article-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 10px;
+		}
+		.article-table td { vertical-align: top; padding: 0; }
+		.article-table td.text { width: 70%; font-size: 9pt; }
+		.article-table td.image { width: 30%; text-align: right; }
+		.article-table td.image img {
+			max-height: 90px;
+			max-width: 150px;
 		}
 
 		/* ── Page 2 header ── */
@@ -243,55 +244,64 @@
 
 		/* ── AGB page ── */
 		.agb-title {
-			font-size: 10pt;
+			font-size: 9.5pt;
 			font-weight: 700;
-			margin-bottom: 10px;
-			line-height: 1.4;
+			margin-bottom: 8px;
+			line-height: 1.3;
 		}
 
+		/* Floats instead of a <table> — dompdf mis-paginates tall multi-column
+		   tables (spurious blank pages), floats break across pages cleanly. */
 		.agb-cols {
 			width: 100%;
-			border-collapse: collapse;
 		}
-		.agb-cols td {
-			vertical-align: top;
-			width: 50%;
-			font-size: 7.5pt;
-			line-height: 1.6;
+		.agb-cols::after { content: ""; display: block; clear: both; }
+		.agb-col {
+			float: left;
+			width: 49%;
+			font-size: 5.6pt;
+			line-height: 1.15;
 			color: #222;
 		}
-		.agb-cols td:first-child { padding-right: 10px; }
-		.agb-cols td:last-child  { padding-left: 10px; }
+		.agb-col.left  { margin-right: 2%; }
+		.agb-cols p { margin-bottom: 2px; }
+		.agb-cols ul { margin: 0 0 2px 10px !important; padding: 0 !important; }
+		.agb-cols li { margin-bottom: 0; }
 
 		.agb-section-title {
-			font-size: 8pt;
+			font-size: 6.5pt;
 			font-weight: 700;
 			color: #474a57;
-			margin: 8px 0 2px 0;
+			margin: 3px 0 1px 0;
 		}
 
 		.agb-footer {
-			position: absolute;
-			bottom: 8mm;
-			left: 18mm;
-			right: 18mm;
+			margin-top: 10px;
 			border-top: 1px solid #ccc;
 			padding-top: 4px;
 		}
 		.agb-footer-table {
 			width: 100%;
 			border-collapse: collapse;
-			font-size: 7pt;
+			font-size: 6pt;
 			color: #555;
 		}
 		.agb-footer-table td { padding: 0 4px; vertical-align: top; }
 		.agb-footer-table .logo-cell img {
-			max-height: 28px;
+			max-height: 26px;
 			display: block;
 		}
 	</style>
 </head>
 <body>
+
+{# Fixed letterhead boilerplate used on every quote page — keep these in sync if the
+   business ever wants to change fax/e-mail/phone shown on printed offers. #}
+{% set contactFax = '+49 (0)721 62377-59' %}
+{% set contactDruckdatenEmail = 'druckdaten@pen4you.de' %}
+{% set contactPhone = '(0721) 62377-55' %}
+{% set contactInfoEmail = 'info@pen4you.de' %}
+{% set contactAgbUrl = 'https://www.pen4you.de/agb' %}
 
 {# ================================================================ #}
 {# PAGE 1 — Angebot (DIN 5008 letter layout)                       #}
@@ -302,7 +312,7 @@
 		<tr>
 			{# Left: absender line + customer address window #}
 			<td class="col-left">
-				<div class="absender-line">{{ shop.address.name }}, {{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}</div>
+				<div class="absender-line">{{ shop.address.name }}, {{ shop.address.street }}, {{ shop.address.cityLine }}</div>
 
 				<table class="customer-table">
 					<tr>
@@ -338,12 +348,10 @@
 				{% if shop.logoUrl %}
 					<img class="logo" src="{{ shop.logoUrl }}" alt="{{ shop.address.name }}" />
 				{% endif %}
-				<div class="shop-headline">
-					{% if shop.address.phone %}Tel.: {{ shop.address.phone }}{% else %}{{ shop.address.name }}{% endif %}
-				</div>
+				<div class="shop-headline">Unsere Faxnummer: {{ contactFax }}</div>
 				<div class="shop-contact">
-					{% if shop.address.email %}{{ shop.address.email }}<br/>{% endif %}
-					{% if shop.url %}{{ shop.url }}{% endif %}
+					Ihre Druckdaten senden Sie uns bitte per E-Mail an:<br/>
+					<a href="mailto:{{ contactDruckdatenEmail }}">{{ contactDruckdatenEmail }}</a>
 				</div>
 				<div class="date-line">Datum: {{ generatedAt|date('d.m.Y') }}</div>
 			</td>
@@ -352,16 +360,25 @@
 
 	<hr class="sep" />
 
-	<p class="subject">Ihr Angebot: {{ product.productNumber }} {{ product.translated.name|default(product.name) }}</p>
+	<p class="subject">Ihr Angebot: {{ product.translated.name|default(product.name) }}</p>
 
 	<p class="salutation">
 		Sehr geehrte Damen und Herren,<br/>
 		gerne überreichen wir Ihnen nachstehend folgendes Angebot:
 	</p>
 
-	<p class="article-line">
-		<strong>{{ product.productNumber }}</strong>&nbsp;&nbsp; {{ product.translated.name|default(product.name) }}
-	</p>
+	<table class="article-table">
+		<tr>
+			<td class="text">
+				<strong>{{ product.productNumber }}</strong>&nbsp;&nbsp; {{ product.translated.name|default(product.name) }}
+			</td>
+			<td class="image">
+				{% if productImageUrl %}
+					<img src="{{ productImageUrl }}" alt="{{ product.translated.name|default(product.name) }}" />
+				{% endif %}
+			</td>
+		</tr>
+	</table>
 
 	<table class="pos-table">
 		<thead>
@@ -374,7 +391,7 @@
 		</thead>
 		<tbody>
 			<tr>
-				<td>Preis des Artikels</td>
+				<td>Preis des Werbeartikels</td>
 				<td class="r">{{ quantity }}</td>
 				<td class="r">{{ priceData.productUnit|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				<td class="r">{{ priceData.productTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
@@ -390,16 +407,16 @@
 			{% for surcharge in priceData.setupSurcharges %}
 				<tr>
 					<td>{{ surcharge.label }}</td>
-					<td class="r">1</td>
-					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">{{ surcharge.quantity }}</td>
+					<td class="r">{{ surcharge.unitAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				</tr>
 			{% endfor %}
 			{% for surcharge in priceData.filmSurcharges %}
 				<tr>
 					<td>{{ surcharge.label }}</td>
-					<td class="r">1</td>
-					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
+					<td class="r">{{ surcharge.quantity }}</td>
+					<td class="r">{{ surcharge.unitAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 					<td class="r">{{ surcharge.amount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				</tr>
 			{% endfor %}
@@ -410,7 +427,7 @@
 	<table class="info-table">
 		<tr>
 			<td class="key">Versand</td>
-			<td>kostenfrei (an eine deutsche Adresse – außer Inseln)</td>
+			<td>kostenfrei (an eine deutsche Adresse - außer Inseln)</td>
 		</tr>
 		<tr>
 			<td class="key">Lieferung</td>
@@ -418,7 +435,7 @@
 		</tr>
 		<tr>
 			<td class="key">Zahlung</td>
-			<td>nach Druckfreigabe mit 2&nbsp;% Skonto</td>
+			<td>nach Druckfreigabe mit 2% Skonto</td>
 		</tr>
 	</table>
 
@@ -432,7 +449,7 @@
 						<td class="r">{{ priceData.netTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 					</tr>
 					<tr>
-						<td>zzgl. MwSt. {{ priceData.taxRate|number_format(0) }}&nbsp;%</td>
+						<td>zzgl. MwSt.</td>
 						<td class="r">{{ priceData.taxAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 					</tr>
 					<tr class="gross">
@@ -443,13 +460,6 @@
 			</td>
 		</tr>
 	</table>
-
-	<div class="doc-footer">
-		{{ shop.address.name }}
-		{% if shop.address.street %} &bull; {{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}{% endif %}
-		{% if shop.address.phone %} &bull; Tel.: {{ shop.address.phone }}{% endif %}
-		{% if shop.address.email %} &bull; {{ shop.address.email }}{% endif %}
-	</div>
 </div>
 
 
@@ -465,42 +475,33 @@
 				{% if shop.logoUrl %}
 					<img class="logo" src="{{ shop.logoUrl }}" alt="{{ shop.address.name }}" />
 				{% endif %}
-				<div class="shop-headline">
-					{% if shop.address.phone %}Tel.: {{ shop.address.phone }}{% else %}{{ shop.address.name }}{% endif %}
-				</div>
+				<div class="shop-headline">Unsere Faxnummer: {{ contactFax }}</div>
 				<div class="shop-contact">
-					{% if shop.address.email %}{{ shop.address.email }}{% endif %}
+					Ihre Druckdaten senden Sie uns bitte per E-Mail an:<br/>
+					<a href="mailto:{{ contactDruckdatenEmail }}">{{ contactDruckdatenEmail }}</a>
 				</div>
 				<div class="page-num">Seite -2-</div>
 			</td>
 		</tr>
 	</table>
 
-	{# ── Placeholder body text – fill in as needed ── #}
 	<p class="body-text">
-		Unser Angebot gilt nur für Industrie, Handel, Handwerk, Gewerbe, Institutionen und Vereine.
-		Alle Preise verstehen sich netto, zuzüglich der gesetzlichen Mehrwertsteuer.
-		Es gelten unsere Allgemeinen Geschäftsbedingungen, die Sie auf der letzten Seite unseres Angebots finden
-		{% if shop.url %}und/oder auf unserer Homepage {{ shop.url }}/agb einsehen können{% endif %}.
+		Unser Angebot gilt nur für Industrie, Handel, Handwerk, Gewerbe, Institutionen und Vereine. Alle Preise verstehen sich netto, zuzüglich der gesetzlichen Mehrwertsteuer. Es gelten unsere Allgemeinen Geschäftsbedingungen die Sie auf der letzten Seite unseres Angebots finden und/oder auf unserer Homepage <a href="{{ contactAgbUrl }}">{{ contactAgbUrl }}</a> einsehen können.<br/>
+		Bei Druckaufträgen behalten wir uns aus technischen Gründen eine Mehr- oder Minderlieferung von bis zu 10% vor. Bitte beachten Sie, dass wir ohne die Anfertigung eines Andruckmusters keine Gewährleistung für die Ausführung der Werbeanbringung geben können.<br/>
+		Der Zwischenverkauf ist vorbehalten!<br/>
+		Dieses Angebot wurde elektronisch erstellt und ist ohne Unterschrift gültig. Die Gültigkeitsdauer beträgt 4 Wochen.
 	</p>
 
 	<p class="body-text">
-		{# TODO: Add your own conditions here, e.g. delivery tolerances, print data requirements etc. #}
-		Dieses Angebot wurde elektronisch erstellt und ist ohne Unterschrift gültig.
-		Die Gültigkeitsdauer beträgt 4 Wochen.
-	</p>
-
-	<p class="body-text">
-		Sie haben noch Fragen? Dann stehen wir Ihnen selbstverständlich gerne zur Verfügung:
-		{% if shop.address.phone %}Tel. {{ shop.address.phone }}{% endif %}
-		{% if shop.address.email %} oder per E-Mail unter {{ shop.address.email }}{% endif %}
+		Sie haben noch Fragen? Dann stehen wir Ihnen selbstverständlich gerne zur Verfügung:<br/>
+		Tel. {{ contactPhone }} oder per E-Mail unter <a href="mailto:{{ contactInfoEmail }}">{{ contactInfoEmail }}</a>
 	</p>
 
 	<p class="body-text">Wir freuen uns auf Ihren Auftrag.</p>
 
 	<p class="body-text">
 		Mit freundlichen Grüßen<br/>
-		Ihr Team von {{ shop.address.name }}
+		Ihr Team von {{ shop.address.name }}.de
 	</p>
 
 	{# ── Auftragserteilung ── #}
@@ -522,131 +523,140 @@
 			<td>ggf. Firmenstempel</td>
 		</tr>
 	</table>
-
-	<div class="doc-footer">
-		{{ shop.address.name }}
-		{% if shop.address.street %} &bull; {{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}{% endif %}
-		{% if shop.address.phone %} &bull; Tel.: {{ shop.address.phone }}{% endif %}
-		{% if shop.address.email %} &bull; {{ shop.address.email }}{% endif %}
-	</div>
 </div>
 
 
 {# ================================================================ #}
 {# PAGE 3 — Allgemeine Geschäftsbedingungen                        #}
 {# ================================================================ #}
-<div class="page">
+<div class="page page-tight">
 
 	<p class="agb-title">
-		Allgemeine Geschäftsbedingungen der Firma {{ shop.address.name }},
-		{{ shop.address.street }}, {{ shop.address.zip }} {{ shop.address.city }}
+		Allgemeine Geschäftsbedingungen der Firma pen4you, Olaf Malsch, Schillerstr. 5/1, 76356 Weingarten (Anbieter) für den<br/>
+		Verkauf von Waren im Online-Shop www.pen4you.de
 	</p>
 
-	<table class="agb-cols">
-		<tr>
-			<td>
+	<div class="agb-cols">
+		<div class="agb-col left">
 				<p class="agb-section-title">1. Leistungen und Geltungsbereich</p>
-				<p>{# TODO: Insert § 1 text here #}
-					Der Anbieter verkauft in seinem Online-Shop Waren an Unternehmen, Vereine oder sonstige Institutionen.
-					Die Leistungen des Anbieters erfolgen ausschließlich auf der Grundlage der nachfolgenden Allgemeinen Geschäftsbedingungen
-					in der zum Zeitpunkt der Bestellung gültigen Fassung.
-					Unsere Allgemeinen Geschäftsbedingungen gelten ausschließlich. Von unseren AGB abweichende AGB des Bestellers haben keine Gültigkeit,
-					es sei denn wir stimmen diesen ausdrücklich zu.
+				<p>
+					1.1 Der Anbieter verkauft in seinem Online-Shop unter der o. g. URL Waren an Unternehmen, Vereine oder sonstige Institutionen. Dabei handelt es sich regelmäßig um Waren mit aufgedruckten Werbebotschaften, Logos, Markennamen u. Ä. (z.B. Kugelschreiber, USB-Sticks und Feuerzeuge). Hierbei ist der Anbieter ausschließlich für das physische Anbringen der Werbebotschaften auf den bestellten Waren verantwortlich. Er prüft nicht, ob die übermittelten Inhalte mit dem geltenden Recht in Einklang stehen. Der Kunde hat insbesondere selbstständig sicherzustellen, dass die übermittelten Inhalte nicht gegen Marken-, Urheber- oder sonstige gesetzlichen Bestimmungen verstoßen.<br/>
+					1.2 Die Leistungen des Anbieters erfolgen ausschließlich auf der Grundlage der nachfolgenden Allgemeinen Geschäftsbedingungen in der zum Zeitpunkt der Bestellung gültigen Fassung.<br/>
+					1.3 Unsere Allgemeinen Geschäftsbedingungen gelten ausschließlich. Von unseren Allgemeinen Geschäftsbedingungen abweichende AGB des Bestellers haben keine Gültigkeit, es sei denn wir stimmen diesen ausdrücklich zu.
 				</p>
 
 				<p class="agb-section-title">2. Ausschluss von Verbrauchern</p>
-				<p>{# TODO: Insert § 2 text here #}
-					Wir schließen keine Verträge mit Verbrauchern / Privatpersonen.
-					Alle Preise auf der Webseite verstehen sich – vorbehaltlich abweichender Angaben – zzgl. gesetzlicher Mehrwertsteuer.
+				<p>
+					Wie schließen keine Verträge mit Verbrauchern / Privatpersonen. Alle Preise auf der Webseite verstehen sich - vorbehaltlich abweichender Angaben - zzgl. gesetzlicher Mehrwertsteuer.
 				</p>
 
 				<p class="agb-section-title">3. Vertragsschluss</p>
-				<p>{# TODO: Insert § 3 text here #}
-					Unsere Angebote im Internet stellen eine unverbindliche Aufforderung an den Kunden dar, Waren zu bestellen.
-					Wir können die Annahme innerhalb von fünf Tagen erklären, indem wir eine schriftliche Auftragsbestätigung übermitteln
-					oder indem wir die bestellte Ware liefern.
+				<p>
+					Unsere Angebote im Internet stellen eine unverbindliche Aufforderung an den Kunden dar, Waren zu bestellen. Die Bestätigung des Eingangs der Bestellung folgt unmittelbar nach dem Absenden der Bestellung und stellt grundsätzlich noch keine Vertragsannahme dar. Wir können die Annahme innerhalb von fünf Tagen erklären, indem wir eine schriftliche Auftragsbestätigung oder eine Auftragsbestätigung in Textform (Fax oder E-Mail) übermitteln, wobei insoweit der Zugang der Auftragsbestätigung bei Ihnen maßgeblich ist, oder indem wir die bestellte Ware liefern, wobei insoweit der Zugang der Ware bei Ihnen maßgeblich ist, oder indem wir Sie nach Abgabe der Bestellung zur Zahlung auffordern (z.B. bei PayPal-Zahlung). Liegen mehrere der vorgenannten Alternativen vor, kommt der Vertrag in dem Zeitpunkt zustande, in dem eine der vorgenannten Alternativen zuerst eintritt. Erklären wir die Annahme innerhalb vorgenannter Frist nicht, so gilt dies als Ablehnung mit der Folge, dass Sie nicht mehr an Ihre Willenserklärung gebunden sind.
 				</p>
 
 				<p class="agb-section-title">4. Zahlung, Verzug</p>
-				<p>{# TODO: Insert § 4 text here #}
-					Es gelten die zum Zeitpunkt der Bestellung auf unserer Website aufgeführten Preise.
-					Kommt der Besteller in Zahlungsverzug, sind wir berechtigt, Verzugszinsen in Höhe von fünf Prozentpunkten
-					über dem Basiszinssatz der EZB zu fordern.
+				<p>
+					Es gelten die zum Zeitpunkt der Bestellung auf unserer Website aufgeführten Preise. Kommt der Besteller in Zahlungsverzug, so sind wir berechtigt, Verzugszinsen in Höhe von fünf Prozentpunkten über dem Basiszinssatz der Europäischen Zentralbank zu fordern. Für den Fall, dass wir einen weiteren Verzugsschaden geltend machen, hat der Besteller die Möglichkeit nachzuweisen, dass der geltend gemachte Verzugsschaden überhaupt nicht oder in niedrigerer Höhe angefallen ist.
 				</p>
 
 				<p class="agb-section-title">5. Eigentumsvorbehalt</p>
-				<p>{# TODO: Insert § 5 text here #}
-					Der Anbieter behält sich bis zur vollständigen Begleichung aller Forderungen aus einer laufenden
-					Geschäftsbeziehung das Eigentum an der gelieferten Ware vor.
+				<p>
+					5.1 Der Anbieter behält sich bis zur vollständigen Begleichung aller Forderungen aus einer laufenden Geschäftsbeziehung das Eigentum an der gelieferten Ware vor.<br/>
+					5.2 Der Kunde ist zur Weiterveräußerung der Vorbehaltsware im ordnungsgemäßen Geschäftsbetrieb berechtigt. Sämtliche hieraus entstehenden Forderungen gegen Dritte tritt der Kunde in Höhe des jeweiligen Rechnungswertes (einschließlich Umsatzsteuer) im Voraus an den Anbieter ab. Diese Abtretung gilt unabhängig davon, ob die Vorbehaltsware ohne oder nach Verarbeitung weiterverkauft worden ist. Der Kunde bleibt zur Einziehung der Forderungen auch nach der Abtretung ermächtigt. Die Befugnis des Anbieters, die Forderungen selbst einzuziehen, bleibt davon unberührt. Der Anbieter wird jedoch die Forderungen nicht einziehen, solange der Kunde seinen Zahlungsverpflichtungen dem Anbieter gegenüber nachkommt, nicht in Zahlungsverzug gerät und kein Antrag auf Eröffnung eines Insolvenzverfahrens gestellt ist.
 				</p>
 
 				<p class="agb-section-title">6. Lieferung</p>
-				<p>{# TODO: Insert § 6 text here #}
-					Die Lieferfristen sind der Webseite zu entnehmen.
-					Der Beginn der von uns angegebenen Lieferzeit setzt die rechtzeitige und ordnungsgemäße Erfüllung
-					der Verpflichtungen des Kunden voraus, insbesondere die korrekte Angabe der Lieferadresse.
+				<p>
+					6.1 Die Lieferfristen sind der Webseite zu entnehmen. Auf eventuell abweichende Lieferzeiten weisen wir auf der jeweiligen Produktseite hin. Der Beginn der von uns angegebenen Lieferzeit setzt die rechtzeitige und ordnungsgemäße Erfüllung der Verpflichtungen des Kunden voraus, insbesondere die korrekte Angabe der Lieferadresse im Rahmen der Bestellung.<br/>
+					6.2 Falls der Anbieter ohne eigenes Verschulden zur Lieferung der bestellten Ware nicht in der Lage ist, weil der Lieferant des Anbieters seine vertraglichen Verpflichtungen nicht erfüllt, wird der Kunde unverzüglich darüber informiert, dass die bestellte Ware nicht zur Verfügung steht. Bereits erbrachte Gegenleistungen des Vertragspartners werden unverzüglich erstattet. Die gesetzlichen Ansprüche des Kunden bleiben unberührt.<br/>
+					6.3 Die Gefahr der Verschlechterung oder des Untergangs der Ware geht mit der Übergabe des Liefergegenstandes an das Transportunternehmen auf den Besteller über. Verzögert sich die Übergabe oder Versendung aus vom Besteller zu vertretenden Gründen, so geht die Gefahr am Tage der Mitteilung der Versandbereitschaft des Liefergegenstandes auf den Besteller über.
 				</p>
-			</td>
-			<td>
+		</div>
+		<div class="agb-col right">
 				<p class="agb-section-title">7. Annahmeverzug</p>
-				<p>{# TODO: Insert § 7 text here #}
-					Kommt der Kunde in Annahmeverzug oder verletzt er schuldhaft sonstige Mitwirkungspflichten,
-					so sind wir berechtigt, den uns hierdurch entstehenden Schaden einschließlich etwaiger Mehraufwendungen ersetzt zu verlangen.
+				<p>
+					7.1 Kommt der Kunde in Annahmeverzug oder verletzt er schuldhaft sonstige Mitwirkungspflichten, so sind wir berechtigt, den uns hierdurch entstehenden Schaden einschließlich etwaiger Mehraufwendungen ersetzt zu verlangen. Weitergehende Ansprüche bleiben vorbehalten. Dies gilt nicht, wenn der Kunde den Umstand, der zur Unmöglichkeit der Zustellung geführt hat, nicht zu vertreten hat oder wenn er vorübergehend an der Annahme der angebotenen Leistung verhindert war, es sei denn, dass der Anbieter ihm die Leistung eine angemessene Zeit vorher angekündigt hatte.<br/>
+					7.2 Der Kaufpreis ist während des Verzugs zu verzinsen. Der Verzugszinssatz beträgt per anno fünf Prozentpunkte über dem Basiszinssatz.<br/>
+					7.3 Dem Kunden bleibt seinerseits vorbehalten nachzuweisen, dass ein Schaden in der verlangten Höhe nicht oder zumindest wesentlich niedriger entstanden ist. Die Gefahr eines zufälligen Untergangs oder einer zufälligen Verschlechterung der Kaufsache geht in dem Zeitpunkt auf den Besteller über, in dem dieser in Annahme- oder Schuldnerverzug gerät.
 				</p>
 
 				<p class="agb-section-title">8. Gewährleistung</p>
-				<p>{# TODO: Insert § 8 text here #}
-					Ist die Kaufsache mangelhaft, gelten die Vorschriften der gesetzlichen Mängelhaftung.
-					Hiervon abweichend begründet ein unwesentlicher Mangel grundsätzlich keine Mängelansprüche;
-					hat der Anbieter die Wahl der Art der Nacherfüllung;
-					beträgt bei neuen Waren die Verjährungsfrist für Mängel ein Jahr ab Gefahrübergang.
+				<p>
+					Ist die Kaufsache mangelhaft, gelten die Vorschriften der gesetzlichen Mängelhaftung. Hiervon abweichend
+				</p>
+				<ul style="margin: 0 0 6px 14px; padding: 0;">
+					<li>begründet ein unwesentlicher Mangel grundsätzlich keine Mängelansprüche;</li>
+					<li>hat der Anbieter die Wahl der Art der Nacherfüllung;</li>
+					<li>beträgt bei neuen Waren die Verjährungsfrist für Mängel ein Jahr ab Gefahrübergang;</li>
+					<li>sind bei gebrauchten Waren die Rechte und Ansprüche wegen Mängeln grundsätzlich ausgeschlossen;</li>
+					<li>beginnt die Verjährung nicht erneut, wenn im Rahmen der Mängelhaftung eine Ersatzlieferung erfolgt.</li>
+				</ul>
+				<p>
+					8.1 Die vorstehend geregelten Haftungsbeschränkungen und Verjährungsfristverkürzungen gelten nicht
+				</p>
+				<ul style="margin: 0 0 6px 14px; padding: 0;">
+					<li>für Sachen, die entsprechend ihrer üblichen Verwendungsweise für ein Bauwerk verwendet worden sind und dessen Mangelhaftigkeit verursacht haben,</li>
+					<li>für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit, die auf einer vorsätzlichen oder fahrlässigen Pflichtverletzung des Anbieters oder einer vorsätzlichen oder fahrlässigen Pflichtverletzung eines gesetzlichen Vertreters oder Erfüllungsgehilfen des Anbieters beruhen,</li>
+					<li>für sonstige Schäden, die auf einer vorsätzlichen oder grob fahrlässigen Pflichtverletzung des Anbieters oder auf einer vorsätzlichen oder grob fahrlässigen Pflichtverletzung eines gesetzlichen Vertreters oder Erfüllungsgehilfen des Verwenders beruhen, sowie</li>
+					<li>für den Fall, dass der Anbieter den Mangel arglistig verschwiegen hat.</li>
+				</ul>
+				<p>
+					8.2 Die gesetzlichen Verjährungsfristen für den Rückgriffsanspruch nach § 478 BGB bleiben unberührt.<br/>
+					8.3 Handelt der Kunde als Kaufmann i.S.d. § 1 HGB, trifft ihn die kaufmännische Untersuchungs- und Rügepflicht gemäß § 377 HGB. Unterlässt der Kunde die dort geregelten Anzeigepflichten, gilt die Ware als genehmigt.
 				</p>
 
 				<p class="agb-section-title">9. Haftung</p>
-				<p>{# TODO: Insert § 9 text here #}
-					Der Anbieter haftet dem Kunden aus allen vertraglichen, vertragsähnlichen und gesetzlichen
-					Ansprüchen auf Schadens- und Aufwendungsersatz nur bei Vorsatz oder grober Fahrlässigkeit
-					sowie bei Verletzung wesentlicher Vertragspflichten.
-					Im Übrigen ist eine Haftung des Anbieters ausgeschlossen.
+				<p>
+					9.1 Der Anbieter haftet dem Kunden aus allen vertraglichen, vertragsähnlichen und gesetzlichen, auch deliktischen Ansprüchen auf Schadens- und Aufwendungsersatz wie folgt:<br/>
+					9.1.1 Der Anbieter haftet aus jedem Rechtsgrund uneingeschränkt bei Vorsatz oder grober Fahrlässigkeit, bei vorsätzlicher oder fahrlässiger Verletzung des Lebens, des Körpers oder der Gesundheit, aufgrund eines Garantieversprechens, soweit diesbezüglich nichts Anderes geregelt ist oder aufgrund zwingender Haftung wie etwa nach dem Produkthaftungsgesetz.<br/>
+					9.1.2 Verletzt der Anbieter fahrlässig eine wesentliche Vertragspflicht, ist die Haftung auf den vertragstypischen, vorhersehbaren Schaden begrenzt, sofern nicht gemäß vorstehender Ziffer unbeschränkt gehaftet wird. Wesentliche Vertragspflichten sind Pflichten, die der Vertrag dem Anbieter nach seinem Inhalt zur Erreichung des Vertragszwecks auferlegt, deren Erfüllung die ordnungsgemäße Durchführung des Vertrags überhaupt erst ermöglicht und auf deren Einhaltung der Kunde regelmäßig vertrauen darf.<br/>
+					9.1.3 Im Übrigen ist eine Haftung des Anbieters ausgeschlossen.<br/>
+					9.1.4 Vorstehende Haftungsregelungen gelten auch im Hinblick auf die Haftung des Anbieters für seine Erfüllungsgehilfen und gesetzlichen Vertreter.<br/>
+					9.2 Der Kunde stellt den Anbieter von jeglichen Ansprüchen Dritter - einschließlich der Kosten für die Rechtsverteidigung in ihrer gesetzlichen Höhe - frei, die gegen die Anbieter aufgrund von rechts- oder vertragswidrigen Handlungen des Kunden geltend gemacht werden.
 				</p>
 
 				<p class="agb-section-title">10. Schlussbestimmungen</p>
-				<p>{# TODO: Insert § 10 text here #}
-					Anwendbar ist das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts.
-					Ist der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches
-					Sondervermögen, ist das Gericht an unserem Sitz zuständig.
-					Soweit eine Bestimmung dieses Vertrages ungültig ist, bleiben die übrigen Bestimmungen unberührt.
+				<p>
+					10.1 Anwendbar ist das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts.<br/>
+					10.2 Ist der Kunde Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen, ist das Gericht an unserem Sitz zuständig, sofern nicht für die Streitigkeit ein ausschließlicher Gerichtsstand begründet ist. Dies gilt auch, wenn der Kunde keinen Wohnsitz innerhalb der Europäischen Union hat. Der Sitz unseres Unternehmens ist der Überschrift dieser AGB zu entnehmen.<br/>
+					10.3 Soweit eine Bestimmung dieses Vertrages ungültig oder undurchsetzbar ist oder wird, bleiben die übrigen Bestimmungen dieses Vertrages hiervon unberührt.
 				</p>
 
 				<p style="font-size: 7.5pt; color: #888; margin-top: 10px;">
 					Seite 3 von 3
 				</p>
-			</td>
-		</tr>
-	</table>
+		</div>
+	</div>
 
 	<div class="agb-footer">
 		<table class="agb-footer-table">
 			<tr>
-				<td class="logo-cell" style="width: 12%;">
+				<td class="logo-cell" style="width: 10%;">
 					{% if shop.logoUrl %}
 						<img src="{{ shop.logoUrl }}" alt="{{ shop.address.name }}" />
 					{% endif %}
 				</td>
-				<td style="width: 25%;">
-					<strong>{{ shop.address.name }}</strong><br/>
-					{{ shop.address.street }}<br/>
-					{{ shop.address.zip }} {{ shop.address.city }}
+				<td style="width: 22%;">
+					Olaf Malsch<br/>
+					Werbemittel<br/>
+					Schillerstraße 5/1<br/>
+					76356 Weingarten (Baden)
 				</td>
-				<td style="width: 25%;">
-					{% if shop.address.phone %}Tel. {{ shop.address.phone }}<br/>{% endif %}
-					{% if shop.url %}Web {{ shop.url }}<br/>{% endif %}
-					{% if shop.address.email %}E-Mail {{ shop.address.email }}{% endif %}
+				<td style="width: 23%;">
+					Fon +49 (0)721 62377-55<br/>
+					Fax {{ contactFax }}<br/>
+					Web www.pen4you.de<br/>
+					E-Mail {{ contactInfoEmail }}
 				</td>
-				<td style="width: 38%; font-size: 7pt; color: #999;">
-					{# TODO: Add bank details here, e.g.: #}
-					{# IBAN: DE00 0000 0000 0000 0000 00<br/>BIC: XXXXXXXXXX #}
-					Angebot freibleibend – Irrtümer und Zwischenverkauf bleiben vorbehalten.
+				<td style="width: 23%;">
+					Sparkasse Karlsruhe<br/>
+					IBAN DE51 6605 0101 0010 4716 62<br/>
+					BIC KARSDE66XXX<br/>
+					Ust-ID: DE 143 546 498
+				</td>
+				<td style="width: 22%; color: #999;">
+					Angebot freibleibend - Druckfehler, Irrtümer und Zwischenverkauf bleiben vorbehalten.
 				</td>
 			</tr>
 		</table>

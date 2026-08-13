@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HMnet\Configurator\Storefront\Controller;
 
+use Doctrine\DBAL\Connection;
 use HMnet\Configurator\Service\ConfiguratorPriceService;
 use Shopware\Core\Checkout\Document\Renderer\RenderedDocument;
 use Shopware\Core\Checkout\Document\Service\PdfRenderer;
@@ -17,6 +18,7 @@ use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Controller\StorefrontController;
+use Shopware\Storefront\Theme\ThemeConfigValueAccessor;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +35,8 @@ class ConfiguratorPdfController extends StorefrontController
 		private readonly SystemConfigService $systemConfigService,
 		private readonly PdfRenderer $pdfRenderer,
 		private readonly ConfiguratorPriceService $priceService,
+		private readonly Connection $connection,
+		private readonly ThemeConfigValueAccessor $themeConfigValueAccessor,
 		private readonly string $projectDir = ''
 	) {}
 
@@ -64,6 +68,12 @@ class ConfiguratorPdfController extends StorefrontController
 		$priceData = $this->buildPriceDataFromResult($priceResult);
 		$shop = $this->buildShopData($salesChannelContext);
 
+		$productImageUrl = null;
+		$coverUrl = $product->getCover()?->getMedia()?->getUrl();
+		if ($coverUrl !== null) {
+			$productImageUrl = $this->mediaToDataUri($coverUrl);
+		}
+
 		$document = new RenderedDocument(number: 'ANG-' . date('Ymd-His'));
 		$document->setTemplate('@HMnetConfigurator/documents/configurator-quote.html.twig');
 		$document->setContext($salesChannelContext->getContext());
@@ -80,6 +90,7 @@ class ConfiguratorPdfController extends StorefrontController
 		$document->setParameters([
 			'shop' => $shop,
 			'product' => $product,
+			'productImageUrl' => $productImageUrl,
 			'quantity' => $priceResult['adjustedQuantity'] ?? $quantity,
 			'priceData' => $priceData,
 			'currencySymbol' => $salesChannelContext->getCurrency()->getSymbol(),
@@ -123,7 +134,8 @@ class ConfiguratorPdfController extends StorefrontController
 		$criteria = (new Criteria([$productId]))
 			->addAssociation('prices')
 			->addAssociation('price')
-			->addAssociation('tax');
+			->addAssociation('tax')
+			->addAssociation('cover.media');
 
 		return $this->productRepository->search($criteria, $context->getContext())->first();
 	}
@@ -158,16 +170,17 @@ class ConfiguratorPdfController extends StorefrontController
 		$setupSurcharges = [];
 		$filmSurcharges = [];
 		foreach ($result['surcharges'] as $surcharge) {
+			$line = [
+				'label' => $surcharge['label'],
+				'unitAmount' => $surcharge['unitAmount'] ?? $surcharge['amount'],
+				'quantity' => $surcharge['quantity'] ?? 1,
+				'amount' => $surcharge['amount'],
+			];
+
 			if ($surcharge['type'] === 'setup') {
-				$setupSurcharges[] = [
-					'label' => $surcharge['label'],
-					'amount' => $surcharge['amount'],
-				];
+				$setupSurcharges[] = $line;
 			} elseif ($surcharge['type'] === 'film') {
-				$filmSurcharges[] = [
-					'label' => $surcharge['label'],
-					'amount' => $surcharge['amount'],
-				];
+				$filmSurcharges[] = $line;
 			}
 		}
 
@@ -279,29 +292,80 @@ class ConfiguratorPdfController extends StorefrontController
 		return null;
 	}
 
+	/**
+	 * core.basicInformation.address is a single free-text HTML field (e.g.
+	 * "<div>Schillerstraße 5/1<br>76356 Weingarten</div>"), not separate
+	 * street/zip/city fields. Strip the markup and split it into lines.
+	 *
+	 * @return list<string>
+	 */
+	private function parseAddressLines(string $html): array
+	{
+		if ($html === '') {
+			return [];
+		}
+
+		$normalized = preg_replace('/<br\s*\/?>/i', "\n", $html) ?? $html;
+		$text = trim(strip_tags($normalized));
+
+		if ($text === '') {
+			return [];
+		}
+
+		$lines = array_map('trim', explode("\n", $text));
+
+		return array_values(array_filter($lines, static fn (string $line): bool => $line !== ''));
+	}
+
+	private function resolveThemeId(string $salesChannelId): ?string
+	{
+		$themeId = $this->connection->fetchOne(
+			'SELECT LOWER(HEX(theme_id)) FROM theme_sales_channel WHERE sales_channel_id = :salesChannelId',
+			['salesChannelId' => Uuid::fromHexToBytes($salesChannelId)]
+		);
+
+		return \is_string($themeId) && $themeId !== '' ? $themeId : null;
+	}
+
 	private function buildShopData(SalesChannelContext $context): array
 	{
 		$salesChannelId = $context->getSalesChannelId();
+
+		$addressLines = $this->parseAddressLines(
+			(string) $this->systemConfigService->get('core.basicInformation.address', $salesChannelId)
+		);
+
 		$address = [
-			'name' => (string) $this->systemConfigService->get('core.basicInformation.shopName', $salesChannelId),
-			'street' => (string) $this->systemConfigService->get('core.basicInformation.addressStreet', $salesChannelId),
-			'zip' => (string) $this->systemConfigService->get('core.basicInformation.addressZipcode', $salesChannelId),
-			'city' => (string) $this->systemConfigService->get('core.basicInformation.addressCity', $salesChannelId),
-			'phone' => (string) $this->systemConfigService->get('core.basicInformation.phoneNumber', $salesChannelId),
-			'email' => (string) $this->systemConfigService->get('core.basicInformation.email', $salesChannelId),
+			'name' => (string) ($this->systemConfigService->get('core.basicInformation.shopName', $salesChannelId) ?: 'pen4you'),
+			'street' => $addressLines[0] ?? '',
+			// The second line already contains "<zip> <city>" combined.
+			'cityLine' => $addressLines[1] ?? '',
 		];
 
-		$logoId = $this->systemConfigService->get('core.basicInformation.emailLogo', $salesChannelId);
 		$logoUrl = null;
 
-		if (\is_string($logoId) && $logoId !== '') {
-			$logo = $this->mediaRepository->search(new Criteria([$logoId]), $context->getContext())->first();
-			if ($logo !== null) {
-				$logoUrl = $this->mediaToDataUri($logo->getUrl());
+		// Strategy 1: the logo actually configured for the active storefront theme
+		// (Storefront > Theme > "Logo Desktop"). This is what's shown on the live shop.
+		$themeId = $this->resolveThemeId($salesChannelId);
+		if ($themeId !== null) {
+			$themeLogo = $this->themeConfigValueAccessor->get('sw-logo-desktop', $context, $themeId);
+			if (\is_string($themeLogo) && $themeLogo !== '') {
+				$logoUrl = $this->mediaToDataUri($themeLogo);
 			}
 		}
 
-		// Fallback: scan media directory for any file with "logo" in the name
+		// Strategy 2: dedicated e-mail/document logo from the basic shop settings, if set.
+		if ($logoUrl === null) {
+			$logoId = $this->systemConfigService->get('core.basicInformation.emailLogo', $salesChannelId);
+			if (\is_string($logoId) && $logoId !== '') {
+				$logo = $this->mediaRepository->search(new Criteria([$logoId]), $context->getContext())->first();
+				if ($logo !== null) {
+					$logoUrl = $this->mediaToDataUri($logo->getUrl());
+				}
+			}
+		}
+
+		// Strategy 3: scan media directory for any file with "logo" in the name.
 		if ($logoUrl === null) {
 			$logoUrl = $this->findFallbackLogoDataUri();
 		}

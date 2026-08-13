@@ -36,7 +36,7 @@ class ConfiguratorPriceService
 	 *     minimumQuantityHint: string|null,
 	 *     product: array{unitNet: float, quantity: int, totalNet: float},
 	 *     options: array<array{fieldId: string, optionId: string, possibilityId: string, label: string, unitNet: float, quantity: int, totalNet: float}>,
-	 *     surcharges: array<array{type: string, label: string, amount: float}>,
+	 *     surcharges: array<array{type: string, label: string, unitAmount: float, quantity: int, amount: float}>,
 	 *     totals: array{netTotal: float, taxAmount: float, grossTotal: float, taxRate: float},
 	 *     currencySymbol: string,
 	 *     currencyDecimals: int
@@ -97,32 +97,46 @@ class ConfiguratorPriceService
 			$optionUnit = FieldUtils::getPriceFromTiers($priceTiers, $effectiveQuantity) * $multiplicator;
 			$optionTotal = $optionUnit * $effectiveQuantity;
 
+			// e.g. "Mine Silktech L schwarz schreibend" or "Druck auf Clip Tampondruck 2-farbig"
+			$label = implode(' ', array_filter([
+				$field->name ?? '',
+				$option->name ?? '',
+				$possibility->name ?? '',
+			], static fn (string $part): bool => trim($part) !== ''));
+
 			$optionLines[] = [
 				'fieldId' => $fieldId,
 				'optionId' => $option->id,
 				'possibilityId' => $possibilityId,
-				'label' => sprintf('%s: %s %s', $field->name ?? '', $option->name ?? '', $possibility->name ?? ''),
+				'label' => $label,
 				'unitNet' => $optionUnit,
 				'quantity' => $effectiveQuantity,
 				'totalNet' => $optionTotal,
 			];
 
-			$setupPrice = ((float) ($option->setupPrice ?? 0.0)) * $multiplicator;
-			$filmPrice = ((float) ($option->filmPrice ?? 0.0)) * $multiplicator;
+			$setupUnit = (float) ($option->setupPrice ?? 0.0);
+			$filmUnit = (float) ($option->filmPrice ?? 0.0);
+			// Multiplicator represents e.g. the number of print colors, so the setup/film
+			// surcharge is charged per unit (e.g. "2x Einrichtung" for 2-farbig print).
+			$surchargeQuantity = max(1, (int) round($multiplicator));
 
-			if ($setupPrice > 0) {
+			if ($setupUnit > 0) {
 				$surcharges[] = [
 					'type' => 'setup',
-					'label' => sprintf('Einrichtung: %s %s', $option->name ?? '', $possibility->name ?? ''),
-					'amount' => $setupPrice,
+					'label' => 'Einrichtung: ' . $label,
+					'unitAmount' => $setupUnit,
+					'quantity' => $surchargeQuantity,
+					'amount' => $setupUnit * $surchargeQuantity,
 				];
 			}
 
-			if ($filmPrice > 0) {
+			if ($filmUnit > 0) {
 				$surcharges[] = [
 					'type' => 'film',
-					'label' => sprintf('Film: %s %s', $option->name ?? '', $possibility->name ?? ''),
-					'amount' => $filmPrice,
+					'label' => 'Film: ' . $label,
+					'unitAmount' => $filmUnit,
+					'quantity' => $surchargeQuantity,
+					'amount' => $filmUnit * $surchargeQuantity,
 				];
 			}
 		}
