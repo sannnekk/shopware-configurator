@@ -23,9 +23,9 @@
 			</button>
 		</div>
 		{% if 'hmnet_form' is defined %}
-			{{ hmnet_form('019c0e6fffe579c5a7c96c75556abfca', 'trigger_only') }}
-			{{ hmnet_form('019c7b30d8c574b78fb22a866edf0095', 'trigger_only') }}
-			{{ hmnet_form('019c7b395d8b79bbb89196027e728dae', 'trigger_only') }}
+			{{ hmnet_form('contactForm-freePattern', 'trigger_only') }}
+			{{ hmnet_form('concactForm-product', 'trigger_only') }}
+			{{ hmnet_form('contactForm-standard', 'trigger_only') }}
 		{% endif %}
 	</div>
 {% endblock %}
@@ -35,8 +35,8 @@
 	{{ parent() }}
 
 	{% if 'hmnet_form' is defined %}
-		{{ hmnet_form('019c0e6fffe579c5a7c96c75556abfca', 'modal_only') }}
-		{{ hmnet_form('019c7b30d8c574b78fb22a866edf0095', 'modal_only') }}
-		{{ hmnet_form('019c7b395d8b79bbb89196027e728dae', 'modal_only') }}
+		{{ hmnet_form('contactForm-freePattern', 'modal_only') }}
+		{{ hmnet_form('concactForm-product', 'modal_only') }}
+		{{ hmnet_form('contactForm-standard', 'modal_only') }}
 	{% endif %}
 {% endblock %}
