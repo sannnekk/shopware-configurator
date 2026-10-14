@@ -57,7 +57,7 @@ class SetupFilmLineItemHandler implements LineItemFactoryInterface
 
 		$totalPrice = $this->getPrice($lineItems, $type);
 
-		$taxes = $this->calculateTaxes($taxRules, $context);
+		$taxes = $this->calculateTaxes($totalPrice, $taxRules, $context);
 
 		$lineItem->setPrice(new CalculatedPrice(
 			$totalPrice,
@@ -103,7 +103,7 @@ class SetupFilmLineItemHandler implements LineItemFactoryInterface
 	/**
 	 * Generates taxes based on tax rules
 	 */
-	private function calculateTaxes(TaxRuleCollection $taxRules, SalesChannelContext $context): CalculatedTaxCollection
+	private function calculateTaxes(float $price, TaxRuleCollection $taxRules, SalesChannelContext $context): CalculatedTaxCollection
 	{
 		if (\count($taxRules) === 0) {
 			return new CalculatedTaxCollection([]);
@@ -116,9 +116,9 @@ class SetupFilmLineItemHandler implements LineItemFactoryInterface
 		}
 
 		if ($taxState === CartPrice::TAX_STATE_NET) {
-			return $this->taxCalculator->calculateNetTaxes(1, $taxRules);
+			return $this->taxCalculator->calculateNetTaxes($price, $taxRules);
 		}
 
-		return $this->taxCalculator->calculateGrossTaxes(1, $taxRules);
+		return $this->taxCalculator->calculateGrossTaxes($price, $taxRules);
 	}
 }
