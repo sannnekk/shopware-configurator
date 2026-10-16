@@ -52,6 +52,10 @@
 				"noTiers": "Keine Preisstaffeln definiert"
 			},
 			"removeField": "Feld löschen"
+		},
+		"promotion": {
+			"includeConfiguratorOptionsLabel": "Auch auf Konfigurator-Optionen anwenden",
+			"includeConfiguratorOptionsHelpText": "Ohne diese Option gilt der Rabatt nur für den Basis-Produktpreis. Wenn aktiv, gilt er auch für die Konfigurator-Optionen sowie Einrichtungs- und Filmkosten."
 		}
 	}
 }

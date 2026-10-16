@@ -26,6 +26,7 @@ class Migration1759997555DropConfiguratorSchema extends MigrationStep
 
 	public function drop(Connection $connection): void
 	{
+		$connection->executeStatement('DROP TABLE IF EXISTS hmnet_promotion_discount_setting');
 		$connection->executeStatement('DROP TABLE IF EXISTS hmnet_configurator_option_possibility_translation');
 		$connection->executeStatement('DROP TABLE IF EXISTS hmnet_configurator_option_translation');
 		$connection->executeStatement('DROP TABLE IF EXISTS hmnet_configurator_field_translation');

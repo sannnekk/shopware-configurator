@@ -75,6 +75,8 @@ class ConfiguratorLineItemSubscriberTest extends TestCase
 	private function createConfiguredLineItem(string $productId, array $configuration): LineItem
 	{
 		$lineItem = new LineItem($productId, LineItem::PRODUCT_LINE_ITEM_TYPE, $productId, 1);
+		// product line items are stackable when created by the ProductLineItemFactory
+		$lineItem->setStackable(true);
 		$lineItem->setPayloadValue(ConfiguratorCartCollector::PAYLOAD_KEY, $configuration);
 
 		return $lineItem;

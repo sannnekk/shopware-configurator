@@ -52,6 +52,10 @@
 				"noTiers": "No price tiers defined"
 			},
 			"removeField": "Remove field"
+		},
+		"promotion": {
+			"includeConfiguratorOptionsLabel": "Also apply to configurator options",
+			"includeConfiguratorOptionsHelpText": "Without this option the discount only applies to the base product price. When enabled, it also applies to the configurator options and setup/film costs."
 		}
 	}
 }

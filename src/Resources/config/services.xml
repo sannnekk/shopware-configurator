@@ -22,6 +22,14 @@
             <tag name="shopware.entity.extension"/>
         </service>
 
+        <service id="HMnet\Configurator\Core\Content\Promotion\PromotionDiscountSettingEntity">
+            <tag name="shopware.entity"/>
+        </service>
+
+        <service id="HMnet\Configurator\Core\Content\Promotion\PromotionDiscountExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+
         <service id="HMnet\Configurator\Core\Content\Configurator\PriceTierCollectionSerializer">
             <argument type="service" id="validator"/>
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry"/>
@@ -35,13 +43,25 @@
             <tag name="kernel.event_subscriber"/>
         </service>
 
+        <!--
+            Must run after the PromotionProcessor (4900): promotions then only see the base product price,
+            option and setup/film costs are added to the product price afterwards.
+        -->
         <service id="HMnet\Configurator\Core\Checkout\Cart\ConfiguratorCartProcessor">
-            <tag name="shopware.cart.processor" />
+            <tag name="shopware.cart.processor" priority="0" />
             <argument type="service" id="HMnet\Configurator\Service\ConfiguratorLineItemHandler" />
             <argument type="service" id="HMnet\Configurator\Service\SetupFilmLineItemHandler" />
             <argument type="service" id="Psr\Log\LoggerInterface" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\Tax\TaxCalculator" />
             <argument type="service" id="HMnet\Configurator\Service\ConfiguratorPriceService" />
+        </service>
+
+        <!-- Must run after the ConfiguratorCartProcessor (0) and before the delivery processors (-5000) -->
+        <service id="HMnet\Configurator\Core\Checkout\Cart\ConfiguratorPromotionProcessor">
+            <tag name="shopware.cart.processor" priority="-100" />
+            <tag name="kernel.reset" method="reset" />
+            <argument type="service" id="Doctrine\DBAL\Connection" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\PercentagePriceCalculator" />
         </service>
 
         <service id="HMnet\Configurator\Service\ConfiguratorLineItemHandler">

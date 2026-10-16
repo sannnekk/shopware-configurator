@@ -1,3 +1,5 @@
 import './snippet'
 import './module/hmnet-configurator'
 import './extension/sw-product-detail'
+import './extension/sw-promotion-v2-detail'
+import './extension/sw-promotion-discount-component'

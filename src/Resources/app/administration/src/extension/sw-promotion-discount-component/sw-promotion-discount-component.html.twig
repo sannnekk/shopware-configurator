@@ -1,0 +1,13 @@
+{% block sw_promotion_discount_condition_consider_product_rules_field %}
+    {% parent %}
+
+    <template v-if="hmnetShowConfiguratorOptionsSwitch && discount.extensions.hmnetSetting">
+        <mt-switch
+            v-model="discount.extensions.hmnetSetting.includeConfiguratorOptions"
+            bordered
+            :label="$tc('hmnet-configurator.promotion.includeConfiguratorOptionsLabel')"
+            :help-text="$tc('hmnet-configurator.promotion.includeConfiguratorOptionsHelpText')"
+            :disabled="isEditingDisabled"
+        />
+    </template>
+{% endblock %}
