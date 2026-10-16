@@ -130,11 +130,27 @@
 			border: 1px solid #474a57;
 		}
 		.pos-table thead th.r { text-align: right; }
+		.pos-table tbody { border-bottom: 1px solid #d9d9d9; }
 		.pos-table tbody td {
 			padding: 4px 8px;
-			border: 1px solid #ddd;
+			line-height: 1.3;
+			vertical-align: top;
 		}
 		.pos-table tbody td.r { text-align: right; }
+		/* same look as the line items of invoices and other documents:
+		   the product in bold, its options as a grey group below it */
+		.pos-table tbody tr.pos-product td { font-weight: 600; padding-top: 6px; }
+		.pos-table tbody tr.pos-option td {
+			padding-top: 2px;
+			padding-bottom: 2px;
+			background-color: #f4f4f4;
+			color: #444;
+			font-size: 8pt;
+		}
+		.pos-table tbody tr.pos-option td:first-child {
+			padding-left: 14px;
+			border-left: 2px solid #c8c8c8;
+		}
 
 		/* ── Info lines (Versand / Lieferung / Zahlung) ── */
 		.info-table {
@@ -390,14 +406,14 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr>
+			<tr class="pos-product">
 				<td>Preis des Werbeartikels</td>
 				<td class="r">{{ quantity }}</td>
 				<td class="r">{{ priceData.productUnit|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 				<td class="r">{{ priceData.productTotal|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
 			</tr>
 			{% for option in priceData.optionLines %}
-				<tr>
+				<tr class="pos-option">
 					<td>{{ option.label }}</td>
 					<td class="r">{{ option.quantity }}</td>
 					<td class="r">{{ option.unitNet|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
@@ -405,7 +421,7 @@
 				</tr>
 			{% endfor %}
 			{% for surcharge in priceData.setupSurcharges %}
-				<tr>
+				<tr class="pos-option">
 					<td>{{ surcharge.label }}</td>
 					<td class="r">{{ surcharge.quantity }}</td>
 					<td class="r">{{ surcharge.unitAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
@@ -413,7 +429,7 @@
 				</tr>
 			{% endfor %}
 			{% for surcharge in priceData.filmSurcharges %}
-				<tr>
+				<tr class="pos-option">
 					<td>{{ surcharge.label }}</td>
 					<td class="r">{{ surcharge.quantity }}</td>
 					<td class="r">{{ surcharge.unitAmount|number_format(2, ',', '.') }} {{ currencySymbol }}</td>
