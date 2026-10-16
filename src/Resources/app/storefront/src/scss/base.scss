@@ -1,15 +1,19 @@
+// Minimum quantity hint, rendered in the buy form above quantity input and buy button
+.hmnet-product-configurator__hint {
+	margin-bottom: 0.75rem;
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	border: 1px solid #ffda6a;
+	border-radius: 4px;
+	background-color: #fff3cd;
+	color: #664d03;
+	animation: hmnet-hint-fade-in 0.3s ease;
+}
+
 .hmnet-product-configurator {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
-
-	&__hint {
-		margin-bottom: 0;
-		padding: 0.75rem 1rem;
-		font-size: 0.875rem;
-		border-radius: 4px;
-		animation: hmnet-hint-fade-in 0.3s ease;
-	}
 
 	&__tax-warning {
 		font-size: 0.875rem;

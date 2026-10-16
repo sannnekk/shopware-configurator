@@ -39,7 +39,8 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 
 	init() {
 		this.loaderEl = this.el.querySelector('[data-hmnet-configurator-loader]')
-		this.hintEl = this.el.querySelector('[data-hmnet-configurator-hint]')
+		// The hint is rendered in the buy form (above quantity input and buy button)
+		this.hintEl = document.querySelector('[data-hmnet-configurator-hint]')
 		this.quantityInput = document.querySelector(
 			'[data-quantity-selector] input'
 		)
@@ -257,7 +258,7 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		if (!this.hintEl) {
 			// Create hint element if it doesn't exist
 			this.hintEl = document.createElement('div')
-			this.hintEl.className = 'hmnet-product-configurator__hint alert alert-info'
+			this.hintEl.className = 'hmnet-product-configurator__hint alert alert-warning'
 			this.hintEl.setAttribute('data-hmnet-configurator-hint', '')
 			this.hintEl.setAttribute('role', 'alert')
 

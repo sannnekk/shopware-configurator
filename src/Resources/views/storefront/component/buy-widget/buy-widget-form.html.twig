@@ -1,6 +1,9 @@
 {% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
 
 {% block buy_widget_buy_container %}
+	{# Minimum quantity hint, shown right above quantity input and buy button #}
+	<div data-hmnet-configurator-hint class="hmnet-product-configurator__hint alert alert-warning" style="display: none;" aria-hidden="true" role="alert"></div>
+
 	{{ parent() }}
 
 	<input
