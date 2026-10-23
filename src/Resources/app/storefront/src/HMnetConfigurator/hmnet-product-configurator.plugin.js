@@ -227,13 +227,22 @@ export default class HmnetProductConfiguratorPlugin extends Plugin {
 		)
 
 		// Update option prices
+		const pricedFieldIds = new Set()
 		for (const option of result.options) {
+			pricedFieldIds.add(option.fieldId)
 			this.setFieldElement(
 				option.fieldId,
 				option.unitNet,
 				quantity,
 				option.totalNet
 			)
+		}
+
+		// Reset fields without a selected option (e.g. back to "Bitte wählen")
+		for (const fieldId of this.fieldIds) {
+			if (!pricedFieldIds.has(fieldId)) {
+				this.setFieldElement(fieldId, 0, 0, 0)
+			}
 		}
 
 		// Update surcharges (setup/film)
