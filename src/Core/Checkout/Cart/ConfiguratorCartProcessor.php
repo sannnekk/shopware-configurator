@@ -219,6 +219,14 @@ class ConfiguratorCartProcessor implements CartProcessorInterface
 				continue;
 			}
 
+			// Setup/film children are rebuilt on every calculation. Drop the ones from the previous
+			// calculation first: LineItemCollection::add() merges items with an existing id by summing
+			// their quantities, which inflated the quantity on each recalculation and broke the
+			// cart hash check on order submit (CHECKOUT__CART_HASH_MISMATCH).
+			foreach ($lineItem->getChildren()->filterType(SetupFilmLineItemHandler::TYPE) as $staleChild) {
+				$lineItem->getChildren()->remove($staleChild->getId());
+			}
+
 			[$lineItemsWithSetupPrice, $lineItemsWithFilmPrice] = FieldUtils::getSetupAndFilmLineItems($configuratorChildren);
 
 			$setupPriceLineItem = $this->setupFilmFactory->create([
