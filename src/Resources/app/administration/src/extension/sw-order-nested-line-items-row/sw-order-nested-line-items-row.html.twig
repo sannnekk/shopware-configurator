@@ -1,0 +1,11 @@
+{% block sw_order_nested_line_items_row_content_unit_price_content %}
+{{ currencyFilter(hmnetDisplayPrice ? hmnetDisplayPrice.unitPrice : lineItem.unitPrice, currency.isoCode) }}
+{% endblock %}
+
+{% block sw_order_nested_line_items_row_content_quantity_content %}
+{{ hmnetDisplayPrice ? hmnetDisplayPrice.quantity : lineItem.quantity }}
+{% endblock %}
+
+{% block sw_order_nested_line_items_row_content_total_price_content %}
+{{ currencyFilter(hmnetDisplayPrice ? hmnetDisplayPrice.totalPrice : lineItem.totalPrice, currency.isoCode) }}
+{% endblock %}

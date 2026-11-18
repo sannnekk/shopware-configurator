@@ -1,0 +1,22 @@
+{% sw_extends '@Storefront/storefront/component/line-item/element/unit-price.html.twig' %}
+
+{#
+    HMnetConfigurator: configured products show the product price only. The option prices are
+    listed separately in the configuration breakdown, see ConfiguratorPriceExtension.
+#}
+{% block component_line_item_unit_price_inner %}
+    {% set hmnetDisplayPrice = hmnet_configurator_display_price(lineItem) %}
+
+    {% if hmnetDisplayPrice %}
+        <div class="line-item-unit-price-value">
+            {% if displayMode === 'order' %}
+                {{ hmnetDisplayPrice.unitPrice|currency(order.currency.isoCode) }}
+            {% else %}
+                {{ hmnetDisplayPrice.unitPrice|currency }}
+            {% endif %}
+            <span class="line-item-unit-price-value-descriptor" aria-hidden="true"> / {{ 'checkout.lineItemUnitPriceDescriptor'|trans|sw_sanitize }}</span>
+        </div>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

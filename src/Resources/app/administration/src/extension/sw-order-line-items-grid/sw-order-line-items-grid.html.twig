@@ -1,0 +1,9 @@
+{% block sw_order_line_items_grid_grid_columns_unit_price_content %}
+<span v-else>{{ currencyFilter(hmnetDisplayValue(item, 'unitPrice'), order.currency.isoCode, order.itemRounding.decimals) }}</span>
+{% endblock %}
+
+{% block sw_order_line_items_grid_grid_columns_total_price_content %}
+<span>
+    {{ currencyFilter(hmnetDisplayValue(item, 'totalPrice'), order.currency.isoCode, order.itemRounding.decimals) }}
+</span>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% sw_extends '@Storefront/storefront/component/line-item/element/total-price.html.twig' %}
+
+{#
+    HMnetConfigurator: configured products show the product total only. The option prices and the
+    configuration total are listed in the configuration breakdown, see ConfiguratorPriceExtension.
+#}
+{% block component_line_item_total_price_value %}
+    {% set hmnetDisplayPrice = hmnet_configurator_display_price(lineItem) %}
+
+    {% if hmnetDisplayPrice %}
+        <div class="line-item-total-price-value">
+            {% if displayMode === 'order' %}
+                {{ hmnetDisplayPrice.totalPrice|currency(order.currency.isoCode) }}
+            {% else %}
+                {{ hmnetDisplayPrice.totalPrice|currency(currency) }}
+            {% endif %}
+        </div>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

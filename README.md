@@ -46,6 +46,7 @@ When a customer adds the same product with different option combinations, the pl
 - Cart behaviour is implemented through custom collector, processor, and a `BeforeLineItemAddedEvent` subscriber inside `src/Core/Checkout/Cart/`.
 - Tests are located in the `tests/` directory and can be executed with the project-wide PHPUnit configuration.
 - The prices are calculated in two places: in the storefront using js in the configurator, and in the backend using PHP. Ensure that both implementations stay in sync when modifying the pricing logic.
+- The cart folds option and setup/film costs into the product's price (cart totals only sum top-level line items). For display, product rows show the product price only and setup/film rows a quantity of 1: Twig function `hmnet_configurator_display_price()` (`src/Twig/ConfiguratorPriceExtension.php`, used by the storefront, the HMnetTheme documents and the order confirmation mail template) and its admin counterpart `src/Resources/app/administration/src/util/configurator-display-price.js`. Keep both in sync.
 
 ## Legacy Configurator Migrator
 

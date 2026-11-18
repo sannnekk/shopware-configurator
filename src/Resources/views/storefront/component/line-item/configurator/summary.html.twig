@@ -18,20 +18,10 @@
 {# Only setup/film groups that actually cost something are worth showing. #}
 {% set surcharges = surcharges|filter(surcharge => surcharge.price and surcharge.price.totalPrice > 0) %}
 
-{% set basePrice = lineItem.payload.hmnetConfiguratorBasePrice|default(null) %}
-{% set baseTotal = null %}
-{% set baseUnit = null %}
-
-{% if basePrice.total is defined and basePrice.total is not null %}
-    {% set baseTotal = basePrice.total %}
-    {% set baseUnit = basePrice.unit|default(null) %}
-{% elseif lineTotal is not null %}
-    {# Orders created before the base price was stored in the payload: derive it. #}
-    {% set surchargeTotal = surcharges|reduce((carry, surcharge) => carry + surcharge.price.totalPrice, 0) %}
-    {% set optionTotal = options|reduce((carry, option) => carry + (option.price ? option.price.totalPrice : 0), 0) %}
-    {% set baseTotal = lineTotal - optionTotal - surchargeTotal %}
-    {% set baseUnit = baseTotal / quantity %}
-{% endif %}
+{# Product price without options, also derived for orders created before it was stored #}
+{% set basePrice = hmnet_configurator_display_price(lineItem) %}
+{% set baseTotal = basePrice ? basePrice.totalPrice : null %}
+{% set baseUnit = basePrice ? basePrice.unitPrice : null %}
 
 {% set isCollapsible = displayMode == 'offcanvas' %}
 {% set panelId = 'hmnet-config-' ~ displayMode ~ '-' ~ lineItem.id %}
